@@ -1,0 +1,24 @@
+{
+  "projects": [
+    {
+      "name": "WASM Particle Engine",
+      "description": "Rust tabanlı yüksek performanslı parçacık simülasyon motoru.",
+      "tech": ["Rust", "WebAssembly", "JavaScript"],
+      "link": "https://github.com/xgoetia/wasm-particles"
+    },
+    {
+      "name": "Cyber-Terminal UI",
+      "description": "Web tabanlı fütüristik terminal arayüzü ve IDE konsepti.",
+      "tech": ["TypeScript", "CSS", "HTML5"],
+      "link": "https://github.com/xgoetia/cyber-ui"
+    },
+    {
+      "name": "Distributed Logger",
+      "description": "Elixir ve Erlang VM üzerinde çalışan dağıtık log yönetim sistemi.",
+      "tech": ["Elixir", "Erlang", "Docker"],
+      "link": "https://github.com/xgoetia/dist-logger"
+    }
+  ],
+  "author": "xgoetia",
+  "version": "1.0.0"
+}
