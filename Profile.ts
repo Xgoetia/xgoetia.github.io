@@ -1,31 +1,48 @@
 /**
- * xgoetia Technical Profile
+ * xgoetia Technical Profile v2.0
  */
 
 interface SkillSet {
     category: string;
-    languages: string[];
-    expertiseLevel: number; // 1-10
+    items: string[];
+    expertise: number; // 1-10
 }
 
 class DeveloperProfile {
-    public readonly name: string = "xgoetia";
-    public readonly role: string = "WASM & Systems Architect";
-    public skills: SkillSet[] = [
+    public readonly identity = {
+        name: "xgoetia",
+        title: "Full-Stack Systems Architect",
+        location: "Dijital Boşluk / Remote",
+        status: "Aktif"
+    };
+
+    public stack: SkillSet[] = [
         {
-            category: "Systems",
-            languages: ["Rust", "Go", "C++"],
-            expertiseLevel: 9
+            category: "Çekirdek Sistemler",
+            items: ["Rust", "Go", "C++", "WebAssembly"],
+            expertise: 10
         },
         {
-            category: "Web",
-            languages: ["TypeScript", "WebAssembly", "React"],
-            expertiseLevel: 10
+            category: "Frontend Motoru",
+            items: ["TypeScript", "WebGPU", "React", "Next.js"],
+            expertise: 9
+        },
+        {
+            category: "Altyapı & Devops",
+            items: ["Docker", "Kubernetes", "AWS", "CI/CD"],
+            expertise: 8
+        },
+        {
+            category: "Backend & Eşzamanlılık",
+            items: ["Elixir", "Python", "SQL", "Redis"],
+            expertise: 9
         }
     ];
 
-    public getVision(): string {
-        return "Web'in geleceğini Rust ve WASM ile inşa etmek.";
+    public bio: string = "Düşük seviyeli sistem dillerini web'in esnekliğiyle birleştirerek yüksek performanslı mimariler kurguluyorum.";
+
+    public getSummary(): string {
+        return `${this.identity.name} - ${this.identity.title}: Sistem programlama ve modern web teknolojileri arasında köprü kurar.`;
     }
 }
 

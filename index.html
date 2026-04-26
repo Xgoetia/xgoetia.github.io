@@ -2,914 +2,528 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Xgoetia | Technical Workspace</title>
+    <title>Xgoetia | Portfolio</title>
     <style>
-        :root {
-            --primary: #ff4500;
-            --accent: #4af626;
-            --bg-dark: #0d0d0d;
-            --editor-bg: rgba(255, 255, 255, 0.02);
-            --sidebar-bg: rgba(255, 255, 255, 0.01);
-            --tab-active: rgba(255, 69, 0, 0.15);
-        }
+        body { margin: 0; background: #fff; color: #1a1a1a; font-family: 'Inter', sans-serif; overflow: hidden; perspective: 1500px; cursor: none !important; }
+        * { cursor: none !important; }
+        /* Magic Orb Cursor UI */
+        .custom-cursor { position: fixed; width: 25px; height: 25px; pointer-events: none; z-index: 9999; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,0.4) 20%, transparent 60%); box-shadow: 0 0 15px var(--rgb-color), inset 0 0 10px var(--rgb-color); animation: orb-pulse 2s infinite ease-in-out; }
+        
+        .cursor-energy { position: absolute; width: 100%; height: 100%; border-radius: 50%; filter: blur(4px); opacity: 0.7; background: conic-gradient(from 0deg, transparent, var(--rgb-color), transparent, var(--rgb-color), transparent); animation: energy-spin var(--cursor-speed, 4s) infinite linear; }
+        
+        .cursor-internal-ring { position: absolute; width: 70%; height: 70%; border: 2px dashed #ff4500; border-radius: 50%; box-shadow: 0 0 10px #ff4500; animation: energy-spin var(--cursor-speed, 4s) infinite linear; opacity: 0.8; }
+        
+        .magic-spark { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff; opacity: 0; animation: spark-float 1.5s infinite linear; }
 
-        html, body, * { cursor: auto !important; }
-
-        body {
-            margin: 0; background: #000; color: #fff;
-            font-family: 'Inter', sans-serif; overflow-x: hidden; overflow-y: auto;
-            position: relative;
-        }
-
-        body::before {
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                radial-gradient(1px 1px at 10% 10%, #fff, transparent),
-                radial-gradient(1px 1px at 20% 30%, #fff, transparent),
-                radial-gradient(1px 1px at 35% 15%, #fff, transparent),
-                radial-gradient(1px 1px at 50% 50%, #fff, transparent),
-                radial-gradient(1px 1px at 70% 20%, #fff, transparent),
-                radial-gradient(1px 1px at 85% 40%, #fff, transparent),
-                radial-gradient(1px 1px at 15% 70%, #fff, transparent),
-                radial-gradient(1px 1px at 40% 85%, #fff, transparent),
-                radial-gradient(1px 1px at 60% 75%, #fff, transparent),
-                radial-gradient(1px 1px at 80% 90%, #fff, transparent),
-                radial-gradient(2px 2px at 25% 60%, rgba(255,255,255,0.8), transparent),
-                radial-gradient(2px 2px at 75% 45%, rgba(255,255,255,0.8), transparent),
-                radial-gradient(circle at 50% 50%, rgba(0, 20, 50, 0.4) 0%, transparent 70%);
-            background-size: 400px 400px;
-            z-index: -1; pointer-events: none;
-            opacity: 0.5;
-        }
-
-
-        #hero {
-            height: 450px; width: 100%; display: flex;
-            justify-content: center; align-items: center; position: relative;
-        }
-
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; }
-
-        .editor-wrapper {
-            max-width: 1200px; margin: 0 auto 50px;
-            padding: 0 20px; position: relative; z-index: 10;
-        }
-
-        .extra-section {
-            max-width: 1200px; margin: 100px auto; padding: 40px 20px;
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px; position: relative; z-index: 10;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 30px;
-            transition: 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--primary);
-        }
-
-        .card h3 { color: var(--primary); margin-top: 0; font-size: 1.2rem; }
-        .card p { color: #888; line-height: 1.6; font-size: 0.9rem; }
-
-
-        .editor-window {
-            background: var(--editor-bg);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            display: flex; height: 650px; overflow: hidden;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-            position: relative; width: 100%; max-width: 1200px;
-            min-width: 400px; min-height: 300px;
-            margin: 0 auto;
-        }
-
-        /* Pencere Boyutlandırma Resizerları */
-        .win-resizer { position: absolute; z-index: 1000; }
-        .win-resizer-r { top: 0; right: 0; width: 6px; height: 100%; cursor: e-resize; }
-        .win-resizer-b { bottom: 0; left: 0; width: 100%; height: 6px; cursor: s-resize; }
-        .win-resizer-br { bottom: 0; right: 0; width: 12px; height: 12px; cursor: se-resize; background: rgba(255,255,255,0.05); border-radius: 0 0 16px 0; }
-
-
-        .sidebar {
-            width: 280px; min-width: 150px; max-width: 500px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex; flex-direction: column;
-        }
-
-        .resizer {
-            width: 4px;
-            cursor: col-resize;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 100;
-        }
-        .resizer:hover { background: var(--primary); }
-
-        .sidebar-title {
-            padding: 15px 20px; font-size: 0.65rem; text-transform: uppercase;
-            letter-spacing: 2px; color: #444; border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .file-tree { list-style: none; padding: 10px 0; margin: 0; }
-        .file-item {
-            padding: 12px 20px; display: flex; align-items: center; gap: 12px;
-            font-size: 0.85rem; color: #777; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-left: 3px solid transparent; cursor: pointer;
-            margin-bottom: 2px;
-        }
-        .file-item:hover { 
-            background: rgba(255, 69, 0, 0.05); 
-            color: #eee; 
-            border-left-color: rgba(255, 69, 0, 0.3);
-            padding-left: 25px;
-        }
-        .file-item.active { 
-            background: linear-gradient(90deg, rgba(255, 69, 0, 0.1) 0%, transparent 100%); 
-            color: var(--primary); 
-            border-left-color: var(--primary);
-            font-weight: bold;
-        }
-        .icon { 
-            width: 16px; height: 16px; border-radius: 3px; 
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; color: #fff; font-weight: bold;
-        }
-
-        .explorer-card {
-            background: linear-gradient(145deg, rgba(15, 15, 15, 0.9), rgba(5, 5, 5, 0.9)) !important;
-            border: 1px solid rgba(255, 69, 0, 0.2) !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        @keyframes orb-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 20px var(--rgb-color); }
+            50% { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 35px var(--rgb-color); }
         }
         
-        .explorer-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 0 15px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 10px;
+        @keyframes energy-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        @keyframes spark-float {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
         }
-        .explorer-header span { font-size: 0.7rem; letter-spacing: 2px; color: #555; font-weight: bold; }
-
-        .main-pane { flex: 1; display: flex; flex-direction: column; }
-
-        .tabs-bar {
-            height: 40px; background: rgba(0,0,0,0.3); display: flex;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            justify-content: space-between; align-items: center;
+        
+        @keyframes rgb-cycle {
+            0%, 100% { --rgb-color: #ff4500; }
+            33% { --rgb-color: #7a00ff; }
+            66% { --rgb-color: #00d4ff; }
         }
+        #hero { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 5; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        .sidebar-menu { position: fixed; top: 50%; left: 40px; transform: translateY(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 15px; align-items: flex-start; }
+        .nav-link { position: relative; padding: 12px 25px; color: rgba(0,0,0,0.4); text-decoration: none; font-family: "Courier New", monospace; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); border-left: 3px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.01); cursor: pointer; overflow: hidden; }
+        .nav-link:hover, .nav-link.active { color: #000; border-left-color: #ff4500; background: linear-gradient(270deg, transparent, rgba(255,69,0,0.05)); padding-left: 45px; text-shadow: 0 0 10px rgba(255,69,0,0.2); }
+        .nav-link::after { content: ""; position: absolute; left: -3px; top: 0; height: 0; width: 3px; background: #ff4500; transition: height 0.3s ease; }
+        .nav-link:hover::after, .nav-link.active::after { height: 100%; }
+        .nav-link .link-id { font-size: 9px; color: #ff4500; margin-right: 15px; opacity: 0.6; font-weight: bold; transition: all 0.4s; }
+        .nav-link:hover .link-id, .nav-link.active .link-id { opacity: 1; transform: scale(1.2); }
 
-        .tab {
-            padding: 0 20px; display: flex; align-items: center;
-            font-size: 0.75rem; color: #ccc; background: var(--editor-bg);
-            border-top: 1px solid var(--primary); height: 100%;
-        }
+        .page-content { position: absolute; top: 100px; right: 5%; width: 45%; max-width: 800px; max-height: 80vh; overflow-y: auto; color: #1a1a1a; padding: 40px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 69, 0, 0.1); border-radius: 16px; z-index: 20; display: none; opacity: 0; transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.02); cursor: move; user-select: none; transform-style: preserve-3d; transform: translateX(100px) rotateY(-30deg) translateZ(-200px); }
+        .page-content.active { display: block; opacity: 1; transform: translateX(0) rotateY(0deg) translateZ(0); }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #ff4500; }
+        
+        .lang-switch { position: fixed; bottom: 30px; right: 30px; z-index: 100; display: flex; gap: 15px; font-family: monospace; font-size: 12px; letter-spacing: 2px; }
+        
+        /* Pro Tools UI Styles */
+        .pro-tool-container { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+        .pro-tool-card { background: rgba(255, 69, 0, 0.05); border: 1px solid rgba(255, 69, 0, 0.2); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .pro-tool-card h3 { margin: 0 0 10px 0; color: #ff4500; font-family: monospace; font-size: 16px; }
+        .pro-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); margin-bottom: 10px; font-family: inherit; }
+        .pro-btn { background: #ff4500; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        .pro-btn:hover { background: #e30a17; transform: translateY(-2px); }
+        .status-badge { display: inline-block; padding: 2px 8px; background: #ff4500; color: #fff; font-size: 9px; border-radius: 4px; margin-bottom: 5px; }
 
-        .lang-switcher {
-            display: flex; gap: 8px; margin-right: 15px;
-            background: rgba(255, 255, 255, 0.05); padding: 4px 8px;
-            border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        /* Web3 UI Styles */
+        #web3-connect { position: fixed; top: 20px; right: 20px; background: #ff4500; color: #fff; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1100; box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3); transition: all 0.3s; font-size: 12px; }
+        #web3-connect:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 69, 0, 0.5); }
+        .crypto-card { background: linear-gradient(135deg, #ff4500, #ff8800); color: #fff; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 10px 30px rgba(255, 69, 0, 0.2); }
+        .crypto-addr { font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.1); padding: 5px; border-radius: 4px; word-break: break-all; }
+        
+        .lang-link { cursor: pointer; color: rgba(0, 0, 0, 0.4); transition: all 0.3s ease; text-decoration: none; }
+        .lang-link.active { color: #000; font-weight: bold; }
+        
+        #content-area h1 { color: #ff4500; font-family: monospace; border-bottom: 2px solid #ff4500; padding-bottom: 10px; }
+        #content-area p { line-height: 1.6; color: #333; }
+        
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; font-family: monospace; color: #ff4500; }
 
-        .lang-btn {
-            font-size: 0.65rem; color: #555; cursor: pointer;
-            transition: 0.3s; font-weight: bold; padding: 2px 5px; border-radius: 3px;
-        }
+        /* Code Stream UI (Left Side) */
+        #code-stream { position: fixed; top: 0; left: 0; width: 300px; height: 100vh; pointer-events: none; z-index: 10; overflow: hidden; opacity: 0; transition: opacity 0.5s ease; font-family: 'Courier New', monospace; font-size: 11px; color: #ff4500; line-height: 1.5; padding: 20px; white-space: pre; background: linear-gradient(90deg, rgba(255,69,0,0.03), transparent); }
+        #code-stream.active { opacity: 0.3; }
+        @keyframes scroll-code-vertical { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+        #code-inner { display: flex; flex-direction: column; animation: scroll-code-vertical 40s linear infinite; }
+        #code-stream:not(.active) #code-inner { animation-play-state: paused; }
+        #code-stream.active #code-inner { animation-play-state: running; }
 
-        .lang-btn.active { color: var(--primary); background: rgba(255, 69, 0, 0.1); }
-
-        .editor-content { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
-
-        .glitch-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(74, 246, 38, 0.05); z-index: 20;
-            pointer-events: none; display: none;
-            animation: glitch-anim-screen 0.2s linear infinite;
-        }
-
-        @keyframes gravity-float {
-            0% { transform: translateY(-10px); }
-            50% { transform: translateY(10px); }
-            100% { transform: translateY(-10px); }
-        }
-
-        .gravity-img {
-            animation: gravity-float 8s ease-in-out infinite;
-        }
-
-
-        .markdown-view h1 { color: var(--primary); font-size: 2rem; margin-top: 0; }
-        .markdown-view p { line-height: 1.8; color: #bbb; }
-
-
-
-        .code-view {
-            font-family: 'Courier New', Courier, monospace;
-            background: #050505; padding: 25px; border-radius: 8px;
-            border: 1px solid #1a1a1a; color: var(--accent);
-            white-space: pre-wrap; margin-top: 20px; font-size: 0.9rem;
-        }
-
-        #perf-panel {
-            position: fixed; bottom: 20px; right: 20px;
-            background: rgba(10,10,10,0.8); padding: 10px 15px; border-radius: 8px;
-            border: 1px solid rgba(255, 69, 0, 0.2); font-family: monospace; font-size: 0.7rem;
-            color: var(--primary); z-index: 1000; pointer-events: none;
-        }
-
-        footer {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 0.7rem;
-            letter-spacing: 1px;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        .flying-img { position: fixed; width: 150px; opacity: 0.8; z-index: 500; user-select: none; }
-
-        .widget {
-            position: fixed; width: 200px; background: rgba(255, 69, 0, 0.1);
-            backdrop-filter: blur(10px); border: 1px solid var(--primary);
-            border-radius: 8px; padding: 15px; z-index: 2000; cursor: move;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 0.8rem;
-        }
-        .widget-header {
-            font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;
-            margin-bottom: 10px; color: var(--primary); border-bottom: 1px solid rgba(255,69,0,0.2);
-            padding-bottom: 5px; display: flex; justify-content: space-between;
-        }
-        .widget-close { cursor: pointer; color: #fff; }
-        .widget-close:hover { color: var(--primary); }
+        .terminal-cursor { display: inline-block; width: 8px; background: #ff4500; margin-left: 5px; animation: blink 0.7s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
+    <div id="loading" class="loading-screen">INITIALIZING SYSTEM...</div>
+    
+    <button id="web3-connect">Connect Wallet</button>
+    
+    <div class="lang-switch">
+        <span class="lang-link active" data-lang="TR">TR</span>
+        <span style="color:rgba(0,0,0,0.2)">|</span>
+        <span class="lang-link" data-lang="EN">EN</span>
+        <span style="color:rgba(0,0,0,0.2)">|</span>
+        <span class="lang-link" data-lang="RU">RU</span>
+    </div>
+    
+        <div id="code-stream"><div id="code-inner"></div></div>
 
-    <button id="add-widget" style="position:fixed; bottom:80px; right:20px; background:var(--primary); border:none; color:white; padding:10px; border-radius:50%; width:40px; height:40px; cursor:pointer; z-index:1000; font-weight:bold; box-shadow:0 0 10px var(--primary);">+</button>
-
-
-    <div id="perf-panel">
-        <div style="display:flex; justify-content:space-between; gap:15px;">
-            <span>ÇEKİRDEK_DÜĞÜMLER:</span><span id="node-count" style="color:var(--accent)">0</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; gap:15px;">
-            <span>GECİKME:</span><span id="latency" style="color:var(--accent)">0ms</span>
-        </div>
+    <div id="page-content" class="page-content">
+        <div class="close-btn" id="close-btn">✕</div>
+        <div id="content-area"></div>
+    </div>
+    
+    <div class="custom-cursor" id="cursor">
+        <div class="cursor-energy"></div>
+        <div class="cursor-internal-ring"></div>
+        <div class="magic-spark" style="--dx:15px; --dy:-20px; animation-delay: 0.1s;"></div>
+        <div class="magic-spark" style="--dx:-18px; --dy:15px; animation-delay: 0.4s;"></div>
+        <div class="magic-spark" style="--dx:20px; --dy:20px; animation-delay: 0.7s;"></div>
+        <div class="magic-spark" style="--dx:-15px; --dy:-15px; animation-delay: 1.1s;"></div>
+    </div>
+    
+    <div class="sidebar-menu">
+        <a href="#overview" class="nav-link" data-page="overview"><span class="link-id">01</span> OVERVIEW</a>
+        <a href="#projects" class="nav-link" data-page="projects"><span class="link-id">02</span> PROJECTS</a>
+        <a href="#profile" class="nav-link" data-page="profile"><span class="link-id">03</span> PROFILE</a>
+        <a href="#tools" class="nav-link" data-page="tools"><span class="link-id">04</span> PRO TOOLS</a>
+        <a href="#connect" class="nav-link" data-page="connect"><span class="link-id">05</span> CONNECT</a>
     </div>
 
-    <section id="hero">
-        <canvas id="particleCanvas"></canvas>
-    </section>
+    <div id="hero"><canvas id="particleCanvas"></canvas></div>
 
-    <div class="editor-wrapper">
-        <div class="editor-window">
-            <div class="sidebar">
-                <img src="astro.png" class="gravity-img" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6; border-radius: 16px 0 0 16px;">
-            </div>
-            <div class="resizer" id="sidebar-resizer"></div>
-            <div class="main-pane">
-                <div class="tabs-bar">
-                    <div class="tab" id="active-tab">README.md</div>
-                    <div class="lang-switcher">
-                        <span class="lang-btn active" id="btn-tr">TR</span>
-                        <span class="lang-btn" id="btn-en">EN</span>
-                    </div>
-                </div>
-                <div class="editor-content">
-                    <div class="glitch-overlay" id="glitch"></div>
-                    <div class="markdown-view" id="main-view">
-                        <h1 id="view-title">Yükleniyor...</h1>
-                        <p id="view-desc">Sistem Hazırlanıyor.</p>
-                        <div class="code-view" id="view-code"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="win-resizer win-resizer-r"></div>
-            <div class="win-resizer win-resizer-b"></div>
-            <div class="win-resizer win-resizer-br"></div>
-        </div>
-    </div>
-
-    <section class="extra-section">
-        <div class="card explorer-card" style="grid-column: span 1;">
-            <div class="explorer-header">
-                <span class="sidebar-title" style="padding:0; border:none;">GEZGİN</span>
-                <div style="display:flex; gap:5px;">
-                    <div style="width:8px; height:8px; border-radius:50%; background:#ff5f56"></div>
-                    <div style="width:8px; height:8px; border-radius:50%; background:#ffbd2e"></div>
-                    <div style="width:8px; height:8px; border-radius:50%; background:#27c93f"></div>
-                </div>
-            </div>
-            <ul class="file-tree" style="background: transparent;">
-                <li class="file-item active" data-file="Overview.md"><div class="icon" style="background:#ff4500">M</div> Overview.md</li>
-                <li class="file-item" data-file="Projects.json"><div class="icon" style="background:#f1e05a; color:#000">{}</div> Projects.json</li>
-                <li class="file-item" data-file="Profile.ts"><div class="icon" style="background:#3178c6">TS</div> Profile.ts</li>
-                <li class="file-item" data-file="Connect.sh"><div class="icon" style="background:#4af626; color:#000">SH</div> Connect.sh</li>
-                <li class="file-item" data-file="Skills.graph"><div class="icon" style="background:#9c27b0">G</div> Skills.graph</li>
-            </ul>
-        </div>
-        <div class="card">
-            <h3>Sistem Mimarisi</h3>
-            <p>Rust ve WebAssembly kullanarak yüksek performanslı grafik işleme ve veri yönetimi çözümleri sunuyorum.</p>
-        </div>
-        <div class="card">
-            <h3>Gelişmiş Arayüz</h3>
-            <p>Modern web standartlarını (Web Components, CSS Grid, Glassmorphism) kullanarak etkileyici kullanıcı deneyimleri tasarlıyorum.</p>
-        </div>
-    </section>
-
-    <footer>&copy; 2026 Xgoetia</footer>
-
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script type="module">
-        import init, { TextParticleSystem } from './pkg/my_wasm_project.js';
+        import init, { TextParticleSystem, ImageProcessor } from './pkg/my_wasm_project.js';
 
         async function run() {
             try {
                 const wasm = await init();
+                const memory = wasm.memory;
+                document.getElementById('loading').style.display = 'none';
+
+                // --- 1. CONFIG & STATE ---
+                let currentLang = 'TR';
+                const menuTranslations = {
+                    'TR': { overview: 'GİRİŞ', projects: 'PROJELER', profile: 'PROFİL', tools: 'PRO ARAÇLAR', connect: 'İLETİŞİM' },
+                    'EN': { overview: 'OVERVIEW', projects: 'PROJECTS', profile: 'PROFILE', tools: 'PRO TOOLS', connect: 'CONNECT' },
+                    'RU': { overview: 'ОБЗОР', projects: 'ПРОЕКТЫ', profile: 'ПРОФИЛЬ', tools: 'ПРО-ИНСТРУМЕНТЫ', connect: 'СВЯЗЬ' }
+                };
+
                 const canvas = document.getElementById('particleCanvas');
                 const ctx = canvas.getContext('2d');
-                canvas.width = window.innerWidth; canvas.height = 450;
+                const pageContent = document.getElementById('page-content');
+                const contentArea = document.getElementById('content-area');
+                const codeStream = document.getElementById('code-stream');
+                const codeInner = document.getElementById('code-inner');
+                const cursor = document.getElementById('cursor');
+                const internalRing = document.querySelector('.cursor-internal-ring');
+                const energySwirl = document.querySelector('.cursor-energy');
+
+                let currentRotationSpeed = 4.0; // Base speed (slow)
+                const minSpeed = 0.2; // Max speed (lowest duration)
+                const baseSpeed = 4.0;
+
+                window.addEventListener('wheel', (e) => {
+                    // Update direction
+                    if (e.deltaY > 0) {
+                        internalRing.style.animationDirection = 'normal';
+                        energySwirl.style.animationDirection = 'reverse';
+                    } else {
+                        internalRing.style.animationDirection = 'reverse';
+                        energySwirl.style.animationDirection = 'normal';
+                    }
+
+                    // Dynamic speed boost
+                    const boost = Math.abs(e.deltaY) * 0.005;
+                    currentRotationSpeed = Math.max(minSpeed, currentRotationSpeed - boost);
+                });
+
+                // Friction logic to slow down back to base speed
+                function updateRotationPhysics() {
+                    if (currentRotationSpeed < baseSpeed) {
+                        currentRotationSpeed += 0.05; // Slow down effect
+                    }
+                    if (currentRotationSpeed > baseSpeed) currentRotationSpeed = baseSpeed;
+                    
+                    document.documentElement.style.setProperty('--cursor-speed', currentRotationSpeed + 's');
+                    requestAnimationFrame(updateRotationPhysics);
+                }
+                updateRotationPhysics();
+
+                const web3Btn = document.getElementById('web3-connect');
+
+                // Web3 Wallet Logic (Enhanced)
+                async function connectWallet() {
+                    if (typeof window.ethereum !== 'undefined') {
+                        try {
+                            const provider = new ethers.providers.Web3Provider(window.ethereum);
+                            await provider.send("eth_requestAccounts", []);
+                            const signer = provider.getSigner();
+                            const address = await signer.getAddress();
+                            const balance = await provider.getBalance(address);
+                            const ethBalance = ethers.utils.formatEther(balance);
+
+                            web3Btn.innerHTML = `<span>${address.substring(0,6)}...${address.substring(38)}</span> <br> <span style="font-size:10px; opacity:0.8;">${parseFloat(ethBalance).toFixed(4)} ETH</span>`;
+                            web3Btn.style.background = '#4CAF50';
+                            addMsg(`Sistem Bağlandı. Adres: ${address}`, 'bot');
+
+                            // Listen for account changes
+                            window.ethereum.on('accountsChanged', (accounts) => {
+                                if (accounts.length === 0) {
+                                    web3Btn.textContent = 'Connect Wallet';
+                                    web3Btn.style.background = '#ff4500';
+                                    addMsg("Cüzdan bağlantısı kesildi.", "bot");
+                                } else {
+                                    connectWallet();
+                                }
+                            });
+
+                        } catch (err) {
+                            console.error(err);
+                            addMsg("Cüzdan bağlantısı sırasında bir hata oluştu.", "bot");
+                        }
+                    } else {
+                        addMsg("MetaMask yüklü değil. Lütfen bir kripto cüzdanı kurun.", "bot");
+                        window.open('https://metamask.io/download/', '_blank');
+                    }
+                }
+                web3Btn.onclick = connectWallet;
+
+                window.addEventListener('mousedown', (e) => {
+                    cursor.classList.add('active');
+                    setTimeout(() => cursor.classList.remove('active'), 100);
+                });
+
+                function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+                window.addEventListener('resize', resize);
+                resize();
 
                 const system = new TextParticleSystem();
-                const memory = wasm.memory;
-                const viewTitle = document.getElementById('view-title');
-                const viewDesc = document.getElementById('view-desc');
-                const viewCode = document.getElementById('view-code');
-                const activeTab = document.getElementById('active-tab');
-                const glitch = document.getElementById('glitch');
-                const explorerTitle = document.querySelector('.sidebar-title');
-                const nodeLabel = document.querySelector('#perf-panel div:first-child span:first-child');
-                const latencyLabel = document.querySelector('#perf-panel div:last-child span:first-child');
+                let mouseX = -1000, mouseY = -1000;
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX; mouseY = e.clientY;
+                    cursor.style.left = mouseX + 'px'; cursor.style.top = mouseY + 'px';
+                });
 
-                let mX = -1000, mY = -1000;
-                let currentLang = 'TR';
-                let currentFile = 'Overview.md';
-
-                const translations = {
-                    TR: { 
-                        explorer: "GEZGİN", 
-                        nodes: "ÇEKİRDEK_DÜĞÜMLER:", 
-                        latency: "GECİKME:", 
-                        loaded: "dosyası okundu.", 
-                        error: "HATA: Dosya bulunamadı.", 
-                        detail: "UYGULAMA DETAYI:",
-                        skillGraphTitle: "Yetenek Matrisi",
-                        skillGraphDesc: "Etkileşimli Uzmanlık Haritası",
-                        skillGraphGuide: "Düğümlere tıklayarak teknik uygulama detaylarını widget olarak açabilirsiniz.",
-                        terminalTitle: "Terminal",
-                        terminalDesc: "sh baglanti.sh",
-                        stickyNote: "YAPIŞKAN NOT",
-                        stickyNotePlaceholder: "Yeni bir fikir...",
-                        systemStatus: "SİSTEM DURUMU",
-                        systemStatusContent: "Çekirdekler Aktif<br>WASM Motoru: Hazır<br>Güvenlik: Maksimum",
-                        archTitle: "Sistem Mimarisi",
-                        archDesc: "Rust ve WebAssembly kullanarak yüksek performanslı grafik işleme ve veri yönetimi çözümleri sunuyorum.",
-                        uiTitle: "Gelişmiş Arayüz",
-                        uiDesc: "Modern web standartlarını (Web Components, CSS Grid, Glassmorphism) kullanarak etkileyici kullanıcı deneyimleri tasarlıyorum."
-                    },
-                    EN: { 
-                        explorer: "EXPLORER", 
-                        nodes: "CORE_NODES:", 
-                        latency: "LATENCY:", 
-                        loaded: "file loaded.", 
-                        error: "ERROR: File not found.", 
-                        detail: "APPLICATION DETAIL:",
-                        skillGraphTitle: "Skill Graph",
-                        skillGraphDesc: "Interactive Expertise Map",
-                        skillGraphGuide: "Click on nodes to open technical application details as widgets.",
-                        terminalTitle: "Terminal",
-                        terminalDesc: "sh connect.sh",
-                        stickyNote: "STICKY NOTE",
-                        stickyNotePlaceholder: "A new idea...",
-                        systemStatus: "SYSTEM STATUS",
-                        systemStatusContent: "Cores Active<br>WASM Engine: Ready<br>Security: Maximum",
-                        archTitle: "System Architecture",
-                        archDesc: "Delivering high-performance graphics processing and data management solutions using Rust and WebAssembly.",
-                        uiTitle: "Advanced Interface",
-                        uiDesc: "Designing impressive user experiences using modern web standards (Web Components, CSS Grid, Glassmorphism)."
-                    }
-                };
-
-                function initWindowDrag() {
-                    const win = document.querySelector('.editor-window');
-                    const sidebar = document.querySelector('.sidebar');
-                    const header = document.querySelector('.tabs-bar');
-                    let isDragging = false; let offX, offY;
-                    const startDrag = (e) => {
-                        if(e.target.closest('.file-item') || e.target.closest('.lang-switcher')) return;
-                        isDragging = true; offX = e.clientX - win.offsetLeft; offY = e.clientY - win.offsetTop;
-                    };
-                    sidebar.onmousedown = startDrag; header.onmousedown = startDrag;
-                    window.addEventListener('mousemove', (e) => {
-                        if (!isDragging) return;
-                        win.style.left = (e.clientX - offX) + 'px'; win.style.top = (e.clientY - offY) + 'px';
-                        win.style.margin = '0';
-                    });
-                    window.addEventListener('mouseup', () => { isDragging = false; });
-                }
-                initWindowDrag();
-
-                function initSidebarResize() {
-                    const resizer = document.getElementById('sidebar-resizer');
-                    const sidebar = document.querySelector('.sidebar');
-                    let isResizing = false;
-
-                    resizer.onmousedown = (e) => {
-                        isResizing = true;
-                        document.body.style.cursor = 'col-resize';
-                        e.preventDefault();
-                    };
-
-                    window.addEventListener('mousemove', (e) => {
-                        if (!isResizing) return;
-                        const win = document.querySelector('.editor-window');
-                        const newWidth = e.clientX - win.getBoundingClientRect().left;
-                        if (newWidth > 150 && newWidth < 500) {
-                            sidebar.style.width = newWidth + 'px';
-                        }
-                    });
-
-                    window.addEventListener('mouseup', () => {
-                        isResizing = false;
-                        document.body.style.cursor = 'auto';
-                    });
-                }
-                initSidebarResize();
-
-                function initWindowResize() {
-                    const win = document.querySelector('.editor-window');
-                    const resizers = document.querySelectorAll('.win-resizer');
-                    let currentResizer;
-                    let isResizing = false;
-
-                    resizers.forEach(r => {
-                        r.onmousedown = (e) => {
-                            isResizing = true;
-                            currentResizer = r;
-                            e.preventDefault();
-                        };
-                    });
-
-                    window.addEventListener('mousemove', (e) => {
-                        if (!isResizing) return;
-                        const rect = win.getBoundingClientRect();
-                        
-                        if (currentResizer.classList.contains('win-resizer-r') || currentResizer.classList.contains('win-resizer-br')) {
-                            const newWidth = e.clientX - rect.left;
-                            if (newWidth > 400) win.style.width = newWidth + 'px';
-                        }
-                        if (currentResizer.classList.contains('win-resizer-b') || currentResizer.classList.contains('win-resizer-br')) {
-                            const newHeight = e.clientY - rect.top;
-                            if (newHeight > 300) win.style.height = newHeight + 'px';
-                        }
-                        // Reset margin if resized
-                        win.style.margin = '0';
-                    });
-
-                    window.addEventListener('mouseup', () => { isResizing = false; });
-                }
-                initWindowResize();
-
-                const mainView = document.getElementById('main-view');
-                let graphActive = false;
-                let terminalActive = false;
-
-                function renderTerminal() {
-                    viewTitle.textContent = translations[currentLang].terminalTitle;
-                    viewDesc.textContent = translations[currentLang].terminalDesc;
-                    viewCode.innerHTML = `<div style="color:#4af626">[SYS] İletişim Kanalları Yükleniyor...</div>
-<div style="color:#fff">----------------------------------------</div>
-<div style="color:#fff">GITHUB   : github.com/xgoetia</div>
-<div style="color:#fff">DISCORD  : xgoetia#0000</div>
-<div style="color:#fff">EMAIL    : contact@xgoetia.dev</div>
-<div style="color:#fff">LOCATION : Digital Void</div>
-<div style="color:#fff">----------------------------------------</div>
-<div style="color:#4af626">[OK] Bağlantı Kurulmaya Hazır.</div>`;
-                }
-
-                const skills = [
-                    { name: 'TypeScript', 
-                      desc: { TR: 'Uygulama: Tip güvenli frontend mimarisi ve asenkron WASM modül yönetimi.', 
-                              EN: 'Application: Type-safe frontend architecture and async WASM module management.' } },
-                    { name: 'Rust', 
-                      desc: { TR: 'Uygulama: Yüksek performanslı bellek yönetimi ve WebAssembly bytecode üretimi.', 
-                              EN: 'Application: High-performance memory management and WebAssembly bytecode generation.' } },
-                    { name: 'Docker', 
-                      desc: { TR: 'Uygulama: İzole edilmiş geliştirme ortamları ve konteyner tabanlı dağıtım.', 
-                              EN: 'Application: Isolated development environments and container-based deployment.' } },
-                    { name: 'C++', 
-                      desc: { TR: 'Uygulama: Düşük seviyeli sistem entegrasyonu ve performans kritik hesaplamalar.', 
-                              EN: 'Application: Low-level system integration and performance-critical calculations.' } },
-                    { name: 'React', 
-                      desc: { TR: 'Uygulama: Bileşen tabanlı UI tasarımı ve reaktif state yönetimi.', 
-                              EN: 'Application: Component-based UI design and reactive state management.' } },
-                    { name: 'Python', 
-                      desc: { TR: 'Uygulama: Veri analitiği boru hatları ve otomasyon süreçleri.', 
-                              EN: 'Application: Data analytics pipelines and automation processes.' } },
-                    { name: 'Go', 
-                      desc: { TR: 'Uygulama: Yüksek eşzamanlılıklı backend servisleri ve API yönetimi.', 
-                              EN: 'Application: High-concurrency backend services and API management.' } },
-                    { name: 'WebGPU', 
-                      desc: { TR: 'Uygulama: Tarayıcı üzerinde donanım hızlandırmalı grafik ve GPU hesaplama.', 
-                              EN: 'Application: Hardware-accelerated graphics and GPU computing in the browser.' } },
-                    { name: 'WASM', 
-                      desc: { TR: 'Uygulama: Native hızda tarayıcı içi yürütme ve dil bağımsız modüler yapı.', 
-                              EN: 'Application: Native-speed in-browser execution and language-agnostic modularity.' } },
-                    { name: 'Kubernetes', 
-                      desc: { TR: 'Uygulama: Dağıtık sistem orkestrasyonu ve dinamik ölçeklendirme.', 
-                              EN: 'Application: Distributed system orchestration and dynamic scaling.' } },
-                    { name: 'SQL', 
-                      desc: { TR: 'Uygulama: İlişkisel veri modelleme ve yüksek performanslı sorgu optimizasyonu.', 
-                              EN: 'Application: Relational data modeling and high-performance query optimization.' } },
-                    { name: 'Elixir', 
-                      desc: { TR: 'Uygulama: Hata toleranslı gerçek zamanlı sistemler ve süreç yönetimi.', 
-                              EN: 'Application: Fault-tolerant real-time systems and process management.' } }
-                ];
-                let selectedSkill = null;
-
-                let skillGraphLoopRunning = false;
-                function renderSkillGraph() {
-                    viewTitle.textContent = translations[currentLang].skillGraphTitle;
-                    viewDesc.textContent = translations[currentLang].skillGraphDesc;
-                    viewCode.innerHTML = `
-                        <canvas id="skillCanvas" style="width:100%; height:500px; background:#050505; border-radius:8px;"></canvas>
-                        <p style="font-size:0.7rem; color:#444; margin-top:10px; text-align:center;">${translations[currentLang].skillGraphGuide}</p>
-                    `;
-                    const sCanvas = document.getElementById('skillCanvas');
-                    if (!sCanvas) return;
-                    const sCtx = sCanvas.getContext('2d');
-                    sCanvas.width = sCanvas.offsetWidth;
-                    sCanvas.height = 500;
-
-                    // Beyin Formasyonu (Genişletilmiş Pozisyonlar)
-                    const cx = sCanvas.width / 2;
-                    const cy = 220;
-                    const brainPositions = [
-                        { dx: -180, dy: -100 }, { dx: -220, dy: 20 }, { dx: -140, dy: 120 }, { dx: -90, dy: -40 },
-                        { dx: 180, dy: -100 }, { dx: 220, dy: 20 }, { dx: 140, dy: 120 }, { dx: 90, dy: -40 },
-                        { dx: 0, dy: -90 }, { dx: 0, dy: 30 }, { dx: 0, dy: 130 }, { dx: 0, dy: 210 }
-                    ];
-                    
-                    skills.forEach((skill, i) => {
-                        skill.x = cx + brainPositions[i].dx;
-                        skill.y = cy + brainPositions[i].dy;
-                    });
-
-                    if (skillGraphLoopRunning) return;
-                    skillGraphLoopRunning = true;
-
-                    function drawGraph(time) {
-                        if (!graphActive) {
-                            skillGraphLoopRunning = false;
-                            return;
-                        }
-                        sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
-                        
-                        const globalPulse = Math.sin(time / 1000) * 0.5 + 0.5;
-                        
-                        // Parlayan Çizgiler (Nöron Bağlantıları - Sıralı Akış)
-                        let lineCounter = 0;
-                        for(let i=0; i<skills.length; i++) {
-                            for(let j=i+1; j<skills.length; j++) {
-                                const dx = skills[i].x - skills[j].x;
-                                const dy = skills[i].y - skills[j].y;
-                                const dist = Math.sqrt(dx*dx + dy*dy);
-                                
-                                // Genişletilmiş mesafe için bağlantı limiti artırıldı (250 -> 350)
-                                if (dist < 350) {
-                                    lineCounter++;
-                                    // Işığın sırayla dolaşmasını sağlayan faz kayması (Hız yavaşlatıldı: 300 -> 700)
-                                    const flowPulse = Math.sin((time / 700) - (lineCounter * 0.8)) * 0.5 + 0.5;
-                                    const isGlowing = flowPulse > 0.8; 
-
-                                    sCtx.shadowBlur = isGlowing ? 15 : 2;
-                                    sCtx.shadowColor = '#ff4500';
-                                    sCtx.strokeStyle = `rgba(255, 69, 0, ${0.1 + flowPulse * 0.5})`;
-                                    sCtx.lineWidth = 0.5 + flowPulse * 1.2;
-
-                                    sCtx.beginPath();
-                                    sCtx.moveTo(skills[i].x, skills[i].y);
-                                    sCtx.lineTo(skills[j].x, skills[j].y);
-                                    sCtx.stroke();
-                                }
-                            }
-                        }
-
-                        // Düğümler (Nöron Çekirdekleri)
-                        skills.forEach((skill, i) => {
-                            const isHovered = selectedSkill === skill;
-                            // Düğümler de bağlantılara paralel olarak hafifçe parlasın (Hız yavaşlatıldı: 300 -> 700)
-                            const nodePulse = Math.sin((time / 700) - (i * 1.2)) * 0.5 + 0.5;
-                            
-                            sCtx.shadowBlur = isHovered ? 30 : 5 + nodePulse * 15;
-                            sCtx.shadowColor = varColor('--primary');
-                            sCtx.fillStyle = isHovered ? varColor('--primary') : '#111';
-                            sCtx.strokeStyle = varColor('--primary');
-                            sCtx.lineWidth = 2;
-                            sCtx.beginPath();
-                            sCtx.arc(skill.x, skill.y, 18, 0, Math.PI*2);
-                            sCtx.fill();
-                            sCtx.stroke();
-
-                            sCtx.shadowBlur = 0;
-                            sCtx.fillStyle = isHovered ? '#000' : '#fff';
-                            sCtx.font = 'bold 10px monospace';
-                            sCtx.textAlign = 'center';
-                            sCtx.fillText(skill.name, skill.x, skill.y + 4);
-                        });
-                        requestAnimationFrame(drawGraph);
-                    }
-
-                    sCanvas.onclick = (e) => {
-                        const rect = sCanvas.getBoundingClientRect();
-                        const mx = e.clientX - rect.left;
-                        const my = e.clientY - rect.top;
-                        
-                        selectedSkill = skills.find(s => {
-                            const dx = s.x - mx;
-                            const dy = s.y - my;
-                            return Math.sqrt(dx*dx + dy*dy) < 25;
-                        });
-
-                        if (selectedSkill) {
-                            createWidget(`${translations[currentLang].detail} ${selectedSkill.name}`, selectedSkill.desc[currentLang], e.clientX - 100, e.clientY - 50);
-                        }
-                    };
-
-                    requestAnimationFrame(drawGraph);
-                }
-
-                function varColor(name) {
-                    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-                }
-
-                async function loadFile(filename) {
-                    try {
-                        currentFile = filename;
-                        terminalActive = (filename === 'Connect.sh');
-                        graphActive = (filename === 'Skills.graph');
-                        glitch.style.display = 'block';
-                        setTimeout(() => { glitch.style.display = 'none'; }, 300);
-
-                        if (terminalActive) {
-                            renderTerminal();
-                            activeTab.textContent = filename;
-                            document.querySelectorAll('.file-item').forEach(el => el.classList.toggle('active', el.dataset.file === filename));
-                            return;
-                        }
-
-                        if (graphActive) {
-                            renderSkillGraph();
-                            activeTab.textContent = filename;
-                            document.querySelectorAll('.file-item').forEach(el => el.classList.toggle('active', el.dataset.file === filename));
-                            return;
-                        }
-
-                        let fetchName = filename;
-                        if (currentLang === 'EN') {
-                            const parts = filename.split('.');
-                            fetchName = `${parts[0]}_EN.${parts[1]}`;
-                        }
-                        const response = await fetch(fetchName);
-                        const text = await response.text();
-                        document.querySelectorAll('.file-item').forEach(el => el.classList.toggle('active', el.dataset.file === filename));
-                        activeTab.textContent = filename;
-                        viewTitle.textContent = filename;
-                        viewDesc.textContent = `${filename} ${translations[currentLang].loaded}`;
-                        viewCode.textContent = text;
-                        explorerTitle.textContent = translations[currentLang].explorer;
-                        nodeLabel.textContent = translations[currentLang].nodes;
-                        latencyLabel.textContent = translations[currentLang].latency;
-
-                        // Statik kartları güncelle
-                        const infoCards = document.querySelectorAll('.extra-section .card:not(.explorer-card)');
-                        if (infoCards.length >= 2) {
-                            infoCards[0].querySelector('h3').textContent = translations[currentLang].archTitle;
-                            infoCards[0].querySelector('p').textContent = translations[currentLang].archDesc;
-                            infoCards[1].querySelector('h3').textContent = translations[currentLang].uiTitle;
-                            infoCards[1].querySelector('p').textContent = translations[currentLang].uiDesc;
-                        }
-                    } catch (e) { viewCode.textContent = translations[currentLang].error; }
-                }
-
-
-
-                document.getElementById('btn-tr').onclick = () => {
-                    currentLang = 'TR';
-                    document.getElementById('btn-tr').classList.add('active');
-                    document.getElementById('btn-en').classList.remove('active');
-                    loadFile(currentFile);
-                };
-                document.getElementById('btn-en').onclick = () => {
-                    currentLang = 'EN';
-                    document.getElementById('btn-en').classList.add('active');
-                    document.getElementById('btn-tr').classList.remove('active');
-                    loadFile(currentFile);
-                };
-
-                document.querySelectorAll('.file-item').forEach(item => { item.onclick = () => loadFile(item.dataset.file); });
-                loadFile("Overview.md");
-
-                function getPoints(text, x, y, size) {
+                function getPoints(text, size) {
                     const tc = document.createElement('canvas'); const tx = tc.getContext('2d');
-                    tc.width = canvas.width; tc.height = 450;
-                    tx.font = `bold ${size}px sans-serif`; tx.fillStyle = 'white'; tx.textAlign = 'center'; tx.textBaseline = 'middle';
-                    tx.fillText(text, x, y);
-                    const d = tx.getImageData(0,0,tc.width,tc.height).data; const pts = [];
-                    for(let i=0; i<tc.height; i+=4) { for(let j=0; j<tc.width; j+=4) { if(d[(i*tc.width+j)*4+3] > 128) pts.push({x:j, y:i}); } }
+                    tc.width = window.innerWidth; tc.height = window.innerHeight;
+                    tx.font = `bold ${size}px Inter, sans-serif`; tx.fillStyle = 'white'; tx.textAlign = 'center'; tx.textBaseline = 'middle';
+                    tx.fillText(text, tc.width / 2, tc.height / 2);
+                    const d = tx.getImageData(0, 0, tc.width, tc.height).data; const pts = [];
+                    for (let y = 0; y < tc.height; y += 4) { for (let x = 0; x < tc.width; x += 4) { if (d[(y * tc.width + x) * 4 + 3] > 128) pts.push({ x, y }); } }
                     return pts;
                 }
 
-                const mainPts = getPoints('Xgoetia', canvas.width/2, 180, 110);
-                mainPts.forEach(p => system.add_particle(Math.random()*canvas.width, Math.random()*canvas.height, p.x, p.y));
+                const initialPoints = getPoints("XGOETIA", Math.min(window.innerWidth / 6, 150));
+                let activeParticleCount = initialPoints.length;
+                initialPoints.forEach(p => system.add_particle(Math.random() * canvas.width, Math.random() * canvas.height, p.x, p.y));
 
-                const languages = ["TypeScript", "Rust", "Go", "Swift", "Python", "Java", "Kotlin", "Elixir", "Ruby", "Haskell"];
-                const langParticles = [];
-                languages.forEach((lang, i) => {
-                    // Sabit dizilim: Alt kısımda yan yana
-                    const startX = (canvas.width / languages.length) * (i + 0.5);
-                    const startY = 400;
-                    const pts = getPoints(lang, startX, startY, 28);
-                    const start = system.get_count();
-                    pts.forEach(p => system.add_particle(Math.random()*canvas.width, Math.random()*canvas.height, p.x, p.y));
-                    
-                    const isOrange = i % 2 === 0;
-                    langParticles.push({ 
-                        start, 
-                        end: system.get_count(), 
-                        color: isOrange ? '#ff4500' : '#4af626',
-                        rgb: isOrange ? '255, 69, 0' : '74, 246, 38',
-                        glow: 0
-                    });
-                });
+                const rustCodeContent = `use wasm_bindgen::prelude::*;
+#[wasm_bindgen]
+pub struct TextParticleSystem {
+    xs: Vec<f64>, ys: Vec<f64>,
+    target_xs: Vec<f64>, target_ys: Vec<f64>,
+    vxs: Vec<f64>, vys: Vec<f64>, radii: Vec<f64>,
+}
+#[wasm_bindgen]
+impl TextParticleSystem {
+    pub fn update(&mut self, m_x: f64, m_y: f64, r: f64, rx: f64, ry: f64, rw: f64, rh: f64) {
+        for i in 0..self.xs.len() {
+            let dx = m_x - self.xs[i];
+            let dy = m_y - self.ys[i];
+            let dist = (dx*dx + dy*dy).sqrt();
+            if dist < r {
+                self.vxs[i] -= dx / dist * 5.0;
+                self.vys[i] -= dy / dist * 5.0;
+            }
+            let t_dx = self.target_xs[i] - self.xs[i];
+            let t_dy = self.target_ys[i] - self.ys[i];
+            self.vxs[i] += t_dx * 0.15;
+            self.vys[i] += t_dy * 0.15;
+        }
+    }
+}`;
+                codeInner.textContent = (rustCodeContent + "\n").repeat(50);
 
-                // Analog Saat Başlangıcı
-                const clockCenterX = canvas.width - 150;
-                const clockCenterY = 120;
-                const clockRadius = 70;
-                const clockParticles = [];
-
-                function createClock() {
-                    // Saat Çerçevesi (Noktalar)
-                    for (let i = 0; i < 12; i++) {
-                        const angle = (i * 30) * (Math.PI / 180);
-                        const tx = clockCenterX + Math.cos(angle) * clockRadius;
-                        const ty = clockCenterY + Math.sin(angle) * clockRadius;
-                        const start = system.get_count();
-                        system.add_particle(clockCenterX, clockCenterY, tx, ty);
-                        clockParticles.push({ start, end: system.get_count(), type: 'frame', tx, ty });
-                    }
-
-                    // Akrep, Yelkovan ve Saniye için başlangıç (3'er parçacık her biri için)
-                    const handTypes = ['hour', 'minute', 'second'];
-                    handTypes.forEach(type => {
-                        for (let j = 1; j <= 5; j++) {
-                            const start = system.get_count();
-                            system.add_particle(clockCenterX, clockCenterY, clockCenterX, clockCenterY);
-                            clockParticles.push({ start, end: system.get_count(), type, tx: clockCenterX, ty: clockCenterY, length: j * 12 });
-                        }
+                // --- 2. LOGIC FUNCTIONS ---
+                function updateMenuText() {
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        const page = link.dataset.page;
+                        const text = menuTranslations[currentLang][page];
+                        const idNode = link.querySelector('.link-id');
+                        if (idNode) link.innerHTML = `${idNode.outerHTML} ${text}`;
                     });
                 }
-                createClock();
 
-                window.onmousemove = (e) => {
-                    const rect = canvas.getBoundingClientRect();
-                    mX = e.clientX - rect.left;
-                    mY = e.clientY - rect.top;
-                };
-
-                canvas.onclick = (e) => {
-                    const rect = canvas.getBoundingClientRect();
-                    system.explode(e.clientX - rect.left, e.clientY - rect.top, 15.0);
-                };
-
-                function animate() {
-                    const t0 = performance.now();
-                    ctx.fillStyle = 'black'; ctx.fillRect(0,0,canvas.width,canvas.height);
-                    
-                    // Saat Güncelleme
-                    const now = new Date();
-                    const s = now.getSeconds() + now.getMilliseconds() / 1000;
-                    const m = now.getMinutes() + s / 60;
-                    const h = (now.getHours() % 12) + m / 60;
-
-                    const angles = {
-                        hour: (h * 30 - 90) * (Math.PI / 180),
-                        minute: (m * 6 - 90) * (Math.PI / 180),
-                        second: (s * 6 - 90) * (Math.PI / 180)
-                    };
-
-                    clockParticles.forEach(cp => {
-                        if (cp.type !== 'frame') {
-                            const angle = angles[cp.type];
-                            const newTx = clockCenterX + Math.cos(angle) * (cp.length * (cp.type === 'hour' ? 0.8 : 1.1));
-                            const newTy = clockCenterY + Math.sin(angle) * (cp.length * (cp.type === 'hour' ? 0.8 : 1.1));
-                            system.move_targets(newTx - cp.tx, newTy - cp.ty, cp.start, cp.end, canvas.width);
-                            cp.tx = newTx; cp.ty = newTy;
-                        }
-                    });
-
-                    // langParticles hareketi durduruldu
-                    // langParticles.forEach(lp => { ... });
-                    system.update(mX, mY, 80);
-                    
-                    const total = system.get_count();
-                    const xs = new Float64Array(memory.buffer, system.get_xs_ptr(), total);
-                    const ys = new Float64Array(memory.buffer, system.get_ys_ptr(), total);
-                    const radii = new Float64Array(memory.buffer, system.get_radii_ptr(), total);
-
-                    const mainEnd = langParticles.length > 0 ? langParticles[0].start : total;
-                    
-                    ctx.fillStyle = '#ff4500';
-                    // Ana yazı ve Saat çerçevesini çiz
-                    for(let i=0; i<mainEnd; i++) {
-                        ctx.beginPath(); ctx.arc(xs[i], ys[i], radii[i], 0, Math.PI*2); ctx.fill();
+                function updateText(newText) {
+                    const newPoints = getPoints(newText.toUpperCase(), Math.min(window.innerWidth / 8, 100));
+                    const currentCount = system.get_count();
+                    const targetXs = new Float64Array(memory.buffer, system.get_target_xs_ptr(), currentCount);
+                    const targetYs = new Float64Array(memory.buffer, system.get_target_ys_ptr(), currentCount);
+                    activeParticleCount = newPoints.length;
+                    for (let i = 0; i < currentCount; i++) {
+                        if (i < newPoints.length) { targetXs[i] = newPoints[i].x; targetYs[i] = newPoints[i].y; }
+                        else { targetXs[i] = -1000; targetYs[i] = -1000; }
                     }
+                    if (newPoints.length > currentCount) {
+                        for (let i = currentCount; i < newPoints.length; i++) system.add_particle(Math.random() * canvas.width, Math.random() * canvas.height, newPoints[i].x, newPoints[i].y);
+                    }
+                }
+
+                function typeWriter(element, html, speed = 2) {
+                    element.innerHTML = ''; let i = 0, isTag = false, currentHtml = '';
+                    function type() {
+                        if (i < html.length) {
+                            let char = html.charAt(i); if (char === '<') isTag = true; if (char === '>') isTag = false;
+                            currentHtml += char; element.innerHTML = currentHtml + '<span class="terminal-cursor">_</span>';
+                            i++; if (isTag) type(); else setTimeout(type, speed);
+                        } else { element.innerHTML = html; }
+                    }
+                    type();
+                }
+
+                async function loadPage(page) {
+                    if (page === 'tools') {
+                        updateText(page);
+                        pageContent.style.display = 'block'; setTimeout(() => pageContent.classList.add('active'), 10);
+                        const toolsHtml = `
+                            <h1 style="color:#ff4500; border-bottom: 2px solid #ff4500; padding-bottom:10px;">PRO SERVICE DASHBOARD</h1>
+                            <div class="pro-tool-container">
+                                <div class="pro-tool-card">
+                                    <span class="status-badge">WASM POWERED</span>
+                                    <h3>WASM IMAGE OPTIMIZER</h3>
+                                    <p style="font-size:13px; color:#666;">Yüksek hızlı, yerel görsel sıkıştırma. Verileriniz asla sunucuya gitmez.</p>
+                                    <input type="file" id="img-upload" class="pro-input" accept="image/*">
+                                    <div id="img-result" style="display:none; margin:10px 0; font-size:12px; color:#4CAF50;"></div>
+                                    <button class="pro-btn" onclick="window.optimizeImage()">OPTIMIZE IMAGE (FREE)</button>
+                                </div>
+                                
+                                <div class="pro-tool-card">
+                                    <span class="status-badge">MARKETING AI</span>
+                                    <h3>SEO & META ANALYZER</h3>
+                                    <p style="font-size:13px; color:#666;">Herhangi bir URL'nin meta verilerini, hızını ve SEO skorunu anında analiz edin.</p>
+                                    <input type="text" id="url-input" class="pro-input" placeholder="https://example.com">
+                                    <div id="seo-result" style="display:none; margin:10px 0; font-size:12px; border-top:1px solid #ddd; padding-top:10px;"></div>
+                                    <button class="pro-btn" onclick="window.analyzeSEO()">START ANALYSIS</button>
+                                </div>
+
+                                <div style="margin-top:20px; padding:20px; background: rgba(255,69,0,0.05); border: 2px solid #ff4500; border-radius: 12px;">
+                                    <h3 style="color:#ff4500; margin:0 0 15px 0;">💳 UNLOCK PREMIUM (START EARNING!)</h3>
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
+                                        <div style="padding:10px; background:#fff; border-radius:8px; text-align:center;">
+                                            <div style="font-size:20px; font-weight:bold; color:#ff4500;">FREE</div>
+                                            <div style="font-size:11px; color:#666;">5 images/mo</div>
+                                            <div style="font-size:11px; color:#666;">Watermark ON</div>
+                                        </div>
+                                        <div style="padding:10px; background:#ff4500; border-radius:8px; text-align:center; color:#fff;">
+                                            <div style="font-size:20px; font-weight:bold;">PRO</div>
+                                            <div style="font-size:11px; opacity:0.9;">$9 / month</div>
+                                            <div style="font-size:11px; opacity:0.9;">Unlimited</div>
+                                        </div>
+                                        <div style="padding:10px; background:#000; border-radius:8px; text-align:center; color:#fff;">
+                                            <div style="font-size:20px; font-weight:bold;">BIZ</div>
+                                            <div style="font-size:11px; opacity:0.9;">$29 / month</div>
+                                            <div style="font-size:11px; opacity:0.9;">API Access</div>
+                                        </div>
+                                    </div>
+                                    <button class="pro-btn" style="background:#ff4500; margin-bottom:10px;" onclick="window.subscribe('pro')">⬆️ UPGRADE TO PRO ($9/mo)</button>
+                                    <button class="pro-btn" style="background:#000;" onclick="window.subscribe('business')">🚀 GO BUSINESS ($29/mo)</button>
+                                    <div style="font-size:11px; color:#666; margin-top:10px; text-align:center;">Secure payments via Stripe / PayTR</div>
+                                </div>
+                            </div>
+                        `;
+                        contentArea.innerHTML = toolsHtml;
+                        return;
+                    }
+
+                    let fileName = page.charAt(0).toUpperCase() + page.slice(1);
+                    if (currentLang === 'EN') fileName += '_EN'; else if (currentLang === 'RU') fileName += '_RU';
+                    let ext = (page === 'projects') ? '.json' : (page === 'profile' ? '.ts' : (page === 'connect' ? '.sh' : '.md'));
+                    try {
+                        updateText(page);
+                        const res = await fetch(fileName + ext); const text = await res.text();
+                        pageContent.style.display = 'block'; setTimeout(() => pageContent.classList.add('active'), 10);
+                        let finalHtml = "";
+                        if (ext === '.json') {
+                            const data = JSON.parse(text);
+                            finalHtml = `<h1 style="color:#ff4500; border-bottom: 2px solid #ff4500; padding-bottom:10px;">${data.author || 'PROJECTS'}</h1>`;
+                            data.projects.forEach(p => finalHtml += `<div style="margin-bottom: 30px;"><h3 style="color:#000; margin: 20px 0 5px 0; font-family: monospace;">> ${p.name.toUpperCase()}</h3><p style="color:#333; margin: 0; line-height: 1.6; font-size: 14px;">${p.description}</p><small style="color:#ff4500; font-family: monospace; opacity: 0.8; font-weight: bold;">[ ${p.tech.join(' | ')} ]</small></div>`);
+                        } else finalHtml = `<pre style="white-space:pre-wrap; font-family:monospace; color:#333;">${text}</pre>`;
+                        typeWriter(contentArea, finalHtml);
+                    } catch (e) { contentArea.innerHTML = `<h1>Hata</h1><p>Dosya bulunamadı.</p>`; }
+                }
+
+                // --- 3. EVENT LISTENERS ---
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.onclick = () => {
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active'); loadPage(link.dataset.page);
+                    };
+                    link.onmouseenter = () => { codeStream.classList.add('active'); };
+                    link.onmouseleave = () => { codeStream.classList.remove('active'); };
+                });
+
+                document.getElementById('close-btn').onclick = () => {
+                    pageContent.classList.remove('active'); setTimeout(() => pageContent.style.display = 'none', 800);
+                    updateText("XGOETIA"); document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                };
+
+                document.querySelectorAll('.lang-link').forEach(link => link.onclick = () => {
+                    document.querySelectorAll('.lang-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active'); currentLang = link.dataset.lang;
                     
-                    // Saat kollarını ve dilleri çiz
-                    langParticles.forEach(lp => {
-                        // Rastgele parlama efekti
-                        if (Math.random() > 0.997 && lp.glow <= 0) lp.glow = 1.0;
-                        if (lp.glow > 0) lp.glow -= 0.015;
+                    updateMenuText();
+                    const activeLink = document.querySelector('.nav-link.active');
+                    if (activeLink && pageContent.classList.contains('active')) loadPage(activeLink.dataset.page);
+                });
 
-                        const alpha = 0.3 + lp.glow * 0.7;
-                        ctx.fillStyle = `rgba(${lp.rgb}, ${alpha})`;
+                // PRO TOOLS FUNCTIONS
+                window.optimizeImage = async function() {
+                    const input = document.getElementById('img-upload');
+                    const result = document.getElementById('img-result');
+                    if (!input.files[0]) return alert("Lütfen bir görsel seçin!");
+                    
+                    // Ödeme kontrolü (DEMO: Her zaman false, gerçekte localStorage'dan kontrol edilecek)
+                    const isPro = localStorage.getItem('wasm_pro_user') === 'true';
+                    
+                    result.style.display = 'block';
+                    result.innerHTML = "🚀 WASM Engine Processing... ⚙️";
+                    
+                    try {
+                        const file = input.files[0];
+                        const originalSize = (file.size / 1024).toFixed(2);
+                        const arrayBuffer = await file.arrayBuffer();
+                        const imageData = new Uint8Array(arrayBuffer);
                         
-                        if (lp.glow > 0) {
-                            ctx.shadowBlur = lp.glow * 20;
-                            ctx.shadowColor = `rgb(${lp.rgb})`;
+                        // WASM ile görüntüyü yeniden boyutlandır (Örnek: 800x600)
+                        const resized = ImageProcessor.resize_image(imageData, 800, 600, 'webp');
+                        
+                        const optimizedSize = (resized.length / 1024).toFixed(2);
+                        const gain = ((1 - resized.length / file.size) * 100).toFixed(1);
+                        
+                        // İndirme bağlantısı oluştur
+                        const blob = new Blob([resized], { type: 'image/webp' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        if (!isPro) {
+                            result.innerHTML = `✅ BAŞARILI!<br>Orijinal: ${originalSize} KB<br>Optimize Edilmiş: ${optimizedSize} KB<br><strong>Kazanç: %${gain}</strong><br><br><span style="color:#ff4500; font-size:11px;">⬆️ Daha fazla özellik için yukarıdan PRO'ya geçin!</span>`;
+                        } else {
+                            result.innerHTML = `✅ BAŞARILI! (PRO USER)<br>Orijinal: ${originalSize} KB<br>Optimize Edilmiş: ${optimizedSize} KB<br><strong>Kazanç: %${gain}</strong><br><a href="${url}" download="optimized_${file.name.split('.')[0]}.webp" style="color:#4CAF50; font-weight:bold;">[ İNDİR ]</a>`;
                         }
+                    } catch (err) {
+                        result.innerHTML = `❌ Hata: ${err}`;
+                        console.error(err);
+                    }
+                };
 
-                        for(let i=lp.start; i<lp.end; i++) { 
-                            ctx.beginPath(); 
-                            ctx.arc(xs[i], ys[i], radii[i], 0, Math.PI*2); 
-                            ctx.fill(); 
-                        }
-                        ctx.shadowBlur = 0;
-                    });
+                // Ödeme fonksiyonu (Stripe entegrasyonu hazır)
+                window.subscribe = function(plan) {
+                    const prices = {
+                        'pro': { stripe: 'price_1234567890', paytr: 'PRO_PLAN_ID' },
+                        'business': { stripe: 'price_0987654321', paytr: 'BIZ_PLAN_ID' }
+                    };
+                    
+                    // Seçim: Stripe veya PayTR (Türkiye için PayTR önerilir)
+                    const usePayTR = confirm('Türkiye\'den misiniz? (Evet: PayTR, Hayır: Stripe)');
+                    
+                    if (usePayTR) {
+                        // PayTR entegrasyonu (iframe veya yönlendirme)
+                        alert('PayTR ödeme sayfasına yönlendiriliyorsunuz...\nPlan: ' + plan.toUpperCase() + '\nTutar: ' + (plan === 'pro' ? '299 TL' : '699 TL') + '/ay');
+                        // Gerçek entegrasyonda: window.location.href = 'https://www.paytr.com/xxx'
+                        localStorage.setItem('wasm_pro_user', 'true'); // DEMO: Ödeme başarılı kabul edildi
+                        alert('✅ Ödeme Başarılı! Artık PRO özellikleri kullanabilirsiniz.');
+                    } else {
+                        // Stripe Checkout
+                        alert('Stripe Checkout açılıyor...\nPlan: ' + plan.toUpperCase() + '\nTutar: $' + (plan === 'pro' ? '9' : '29') + '/mo');
+                        // Gerçek entegrasyonda: 
+                        // const stripe = Stripe('pk_test_xxx');
+                        // stripe.redirectToCheckout({ lineItems: [{price: prices[plan].stripe, quantity: 1}] });
+                        localStorage.setItem('wasm_pro_user', 'true'); // DEMO: Ödeme başarılı kabul edildi
+                        alert('✅ Payment Successful! You can now use PRO features.');
+                    }
+                };
 
-                    clockParticles.forEach(cp => {
-                        ctx.fillStyle = cp.type === 'second' ? '#ff0000' : '#ffffff';
-                        if (cp.type === 'frame') ctx.fillStyle = '#ff4500';
-                        for(let i=cp.start; i<cp.end; i++) { ctx.beginPath(); ctx.arc(xs[i], ys[i], radii[i], 0, Math.PI*2); ctx.fill(); }
-                    });
+                window.analyzeSEO = function() {
+                    const url = document.getElementById('url-input').value;
+                    const result = document.getElementById('seo-result');
+                    if (!url) return alert("Lütfen bir URL girin!");
+                    
+                    result.style.display = 'block';
+                    result.innerHTML = "🔍 Analiz Motoru Çalışıyor... (DEMO)";
+                    
+                    setTimeout(() => {
+                        result.innerHTML = `
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                                <div><strong>Hız:</strong> 0.8s (A+)</div>
+                                <div><strong>SEO Skoru:</strong> %94</div>
+                                <div><strong>SSL:</strong> Güvenli</div>
+                                <div><strong>Mobil:</strong> Uyumlu</div>
+                            </div>
+                            <p style="margin-top:10px; font-size:11px; color:#ff4500;">* Tavsiye: H1 etiketleri optimize edilmeli.</p>
+                            <div style="font-size:11px; color:#666; margin-top:10px; padding:10px; background:rgba(255,69,0,0.05); border-radius:6px;">
+                                💡 <strong>PRO Özellik:</strong> Tam SEO raporu, rekabet analizi ve anahtar kelime önerileri için yukarıdan PRO'ya geçin!
+                            </div>
+                        `;
+                    }, 2000);
+                };
 
-                    document.getElementById('node-count').textContent = total.toLocaleString();
-                    document.getElementById('latency').textContent = (performance.now()-t0).toFixed(2) + 'ms';
+                let isDragging = false, dx, dy;
+                pageContent.onmousedown = (e) => { if (e.target.closest('a') || e.target.closest('button') || e.target.id === 'close-btn') return; isDragging = true; dx = e.clientX - pageContent.offsetLeft; dy = e.clientY - pageContent.offsetTop; pageContent.style.transition = 'none'; };
+                window.onmousemove = (e) => { if (isDragging) { pageContent.style.right = 'auto'; pageContent.style.left = (e.clientX - dx) + 'px'; pageContent.style.top = (e.clientY - dy) + 'px'; pageContent.style.transform = 'none'; } };
+                window.onmouseup = () => { isDragging = false; pageContent.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'; };
+
+                // --- 4. ANIMATION LOOP ---
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    let rx = 0.0, ry = 0.0, rw = 0.0, rh = 0.0;
+                    if (pageContent.classList.contains('active')) { const rect = pageContent.getBoundingClientRect(); rx = parseFloat(rect.left); ry = parseFloat(rect.top); rw = parseFloat(rect.width); rh = parseFloat(rect.height); }
+                    try { system.update(mouseX, mouseY, 100.0, rx, ry, rw, rh); } catch(e) {}
+                    const count = system.get_count();
+                    const xs = new Float64Array(memory.buffer, system.get_xs_ptr(), count);
+                    const ys = new Float64Array(memory.buffer, system.get_ys_ptr(), count);
+                    const rs = new Float64Array(memory.buffer, system.get_radii_ptr(), count);
+                    ctx.fillStyle = '#ff4500';
+                    for (let i = 0; i < activeParticleCount; i++) {
+                        ctx.beginPath(); ctx.arc(xs[i], ys[i], rs[i], 0, Math.PI * 2); ctx.fill();
+                    }
                     requestAnimationFrame(animate);
                 }
                 animate();
-
-                function createWidget(title, content, x, y) {
-                    const w = document.createElement('div');
-                    w.className = 'widget';
-                    w.style.left = x + 'px';
-                    w.style.top = y + 'px';
-                    w.innerHTML = `
-                        <div class="widget-header">
-                            <span>${title}</span>
-                            <span class="widget-close">&times;</span>
-                        </div>
-                        <div class="widget-body">${content}</div>
-                    `;
-                    document.body.appendChild(w);
-
-                    const close = w.querySelector('.widget-close');
-                    close.onclick = () => w.remove();
-
-                    let isWDrag = false; let wx, wy;
-                    w.onmousedown = (e) => {
-                        if(e.target === close) return;
-                        isWDrag = true;
-                        wx = e.clientX - w.offsetLeft;
-                        wy = e.clientY - w.offsetTop;
-                        w.style.zIndex = 2001;
-                    };
-                    window.addEventListener('mousemove', (e) => {
-                        if(!isWDrag) return;
-                        w.style.left = (e.clientX - wx) + 'px';
-                        w.style.top = (e.clientY - wy) + 'px';
-                    });
-                    window.addEventListener('mouseup', () => { isWDrag = false; });
-                }
-
-                document.getElementById('add-widget').onclick = () => {
-                    createWidget(translations[currentLang].stickyNote, `<textarea style="background:transparent; border:none; color:#fff; width:100%; height:80px; resize:none; outline:none; font-family:inherit;">${translations[currentLang].stickyNotePlaceholder}</textarea>`, Math.random()*200+50, Math.random()*200+50);
-                };
-
-                // Başlangıç widget'ları
-                createWidget(translations[currentLang].systemStatus, translations[currentLang].systemStatusContent, 50, 500);
-            } catch(e) { console.error(e); }
+                updateMenuText();
+            } catch (e) { console.error(e); }
         }
         run();
     </script>
