@@ -1,0 +1,24 @@
+{
+  "projects": [
+    {
+      "name": "WASM Particle Engine",
+      "description": "High-performance particle simulation engine based on Rust.",
+      "tech": ["Rust", "WebAssembly", "JavaScript"],
+      "link": "https://github.com/xgoetia/wasm-particles"
+    },
+    {
+      "name": "Cyber-Terminal UI",
+      "description": "Web-based futuristic terminal interface and IDE concept.",
+      "tech": ["TypeScript", "CSS", "HTML5"],
+      "link": "https://github.com/xgoetia/cyber-ui"
+    },
+    {
+      "name": "Distributed Logger",
+      "description": "Distributed log management system running on Elixir and Erlang VM.",
+      "tech": ["Elixir", "Erlang", "Docker"],
+      "link": "https://github.com/xgoetia/dist-logger"
+    }
+  ],
+  "author": "xgoetia",
+  "version": "1.0.0"
+}
