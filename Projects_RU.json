@@ -17,6 +17,14 @@
       "description": "Распределенная система управления логами на Elixir и Erlang VM.",
       "tech": ["Elixir", "Erlang", "Docker"],
       "link": "https://github.com/xgoetia/dist-logger"
+    },
+    {
+      "name": "XGoetia App Launcher",
+      "description": "Многоязычный веб-запускатель приложений и центр загрузок на базе WebAssembly. (Демо-приложение: Блокнот)",
+      "tech": ["Rust", "WASM", "TypeScript", "Node.js"],
+      "link": "https://github.com/xgoetia/app-launcher",
+      "download": "https://github.com/xgoetia/app-launcher/releases",
+      "online_app": "http://localhost:3000/app-launcher-demo.html"
     }
   ],
   "author": "xgoetia",

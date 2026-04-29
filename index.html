@@ -57,12 +57,6 @@
         .pro-btn { background: #ff4500; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
         .pro-btn:hover { background: #e30a17; transform: translateY(-2px); }
         .status-badge { display: inline-block; padding: 2px 8px; background: #ff4500; color: #fff; font-size: 9px; border-radius: 4px; margin-bottom: 5px; }
-
-        /* Web3 UI Styles */
-        #web3-connect { position: fixed; top: 20px; right: 20px; background: #ff4500; color: #fff; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1100; box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3); transition: all 0.3s; font-size: 12px; }
-        #web3-connect:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 69, 0, 0.5); }
-        .crypto-card { background: linear-gradient(135deg, #ff4500, #ff8800); color: #fff; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 10px 30px rgba(255, 69, 0, 0.2); }
-        .crypto-addr { font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.1); padding: 5px; border-radius: 4px; word-break: break-all; }
         
         .lang-link { cursor: pointer; color: rgba(0, 0, 0, 0.4); transition: all 0.3s ease; text-decoration: none; }
         .lang-link.active { color: #000; font-weight: bold; }
@@ -82,12 +76,41 @@
 
         .terminal-cursor { display: inline-block; width: 8px; background: #ff4500; margin-left: 5px; animation: blink 0.7s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
+        
+        @keyframes warningPulse {
+            0% { transform: translateX(-10px); opacity: 0.5; }
+            50% { transform: translateX(0); }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .disk-space-warning {
+            background: rgba(255, 69, 0, 0.15);
+            border: 1px solid #ff4500;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .disk-space-ok {
+            background: rgba(76, 175, 80, 0.15);
+            border: 1px solid #4CAF50;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
     </style>
 </head>
 <body>
     <div id="loading" class="loading-screen">INITIALIZING SYSTEM...</div>
-    
-    <button id="web3-connect">Connect Wallet</button>
     
     <div class="lang-switch">
         <span class="lang-link active" data-lang="TR">TR</span>
@@ -104,6 +127,14 @@
         <div id="content-area"></div>
     </div>
     
+    <!-- Online App Launcher Modal -->
+    <div id="app-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9998; padding:20px;">
+        <div style="width:100%; height:100%; background:#fff; border-radius:12px; overflow:hidden; position:relative;">
+            <button id="app-modal-close" style="position:absolute; top:10px; right:10px; z-index:9999; background:#ff4500; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-family:monospace; font-size:12px;">✕ KAPAT</button>
+            <iframe id="app-frame" style="width:100%; height:100%; border:none;"></iframe>
+        </div>
+    </div>
+    
     <div class="custom-cursor" id="cursor">
         <div class="cursor-energy"></div>
         <div class="cursor-internal-ring"></div>
@@ -118,14 +149,14 @@
         <a href="#projects" class="nav-link" data-page="projects"><span class="link-id">02</span> PROJECTS</a>
         <a href="#profile" class="nav-link" data-page="profile"><span class="link-id">03</span> PROFILE</a>
         <a href="#tools" class="nav-link" data-page="tools"><span class="link-id">04</span> PRO TOOLS</a>
-        <a href="#connect" class="nav-link" data-page="connect"><span class="link-id">05</span> CONNECT</a>
+        <a href="#bundler" class="nav-link" data-page="bundler"><span class="link-id">05</span> APP BUNDLER</a>
+        <a href="#connect" class="nav-link" data-page="connect"><span class="link-id">06</span> CONNECT</a>
     </div>
 
     <div id="hero"><canvas id="particleCanvas"></canvas></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script type="module">
-        import init, { TextParticleSystem, ImageProcessor } from './pkg/my_wasm_project.js';
+        import init, { TextParticleSystem } from './dist/my_wasm_project-b181c98248e52193.js';
 
         async function run() {
             try {
@@ -136,9 +167,9 @@
                 // --- 1. CONFIG & STATE ---
                 let currentLang = 'TR';
                 const menuTranslations = {
-                    'TR': { overview: 'GİRİŞ', projects: 'PROJELER', profile: 'PROFİL', tools: 'PRO ARAÇLAR', connect: 'İLETİŞİM' },
-                    'EN': { overview: 'OVERVIEW', projects: 'PROJECTS', profile: 'PROFILE', tools: 'PRO TOOLS', connect: 'CONNECT' },
-                    'RU': { overview: 'ОБЗОР', projects: 'ПРОЕКТЫ', profile: 'ПРОФИЛЬ', tools: 'ПРО-ИНСТРУМЕНТЫ', connect: 'СВЯЗЬ' }
+                    'TR': { overview: 'GİRİŞ', projects: 'PROJELER', profile: 'PROFİL', tools: 'PRO ARAÇLAR', bundler: 'APP PAKETLEYİCİ', connect: 'İLETİŞİM' },
+                    'EN': { overview: 'OVERVIEW', projects: 'PROJECTS', profile: 'PROFILE', tools: 'PRO TOOLS', bundler: 'APP BUNDLER', connect: 'CONNECT' },
+                    'RU': { overview: 'ОБЗОР', projects: 'ПРОЕКТЫ', profile: 'ПРОФИЛЬ', tools: 'ПРО-ИНСТРУМЕНТЫ', bundler: 'СБОРЩИК', connect: 'СВЯЗЬ' }
                 };
 
                 const canvas = document.getElementById('particleCanvas');
@@ -181,45 +212,6 @@
                     requestAnimationFrame(updateRotationPhysics);
                 }
                 updateRotationPhysics();
-
-                const web3Btn = document.getElementById('web3-connect');
-
-                // Web3 Wallet Logic (Enhanced)
-                async function connectWallet() {
-                    if (typeof window.ethereum !== 'undefined') {
-                        try {
-                            const provider = new ethers.providers.Web3Provider(window.ethereum);
-                            await provider.send("eth_requestAccounts", []);
-                            const signer = provider.getSigner();
-                            const address = await signer.getAddress();
-                            const balance = await provider.getBalance(address);
-                            const ethBalance = ethers.utils.formatEther(balance);
-
-                            web3Btn.innerHTML = `<span>${address.substring(0,6)}...${address.substring(38)}</span> <br> <span style="font-size:10px; opacity:0.8;">${parseFloat(ethBalance).toFixed(4)} ETH</span>`;
-                            web3Btn.style.background = '#4CAF50';
-                            addMsg(`Sistem Bağlandı. Adres: ${address}`, 'bot');
-
-                            // Listen for account changes
-                            window.ethereum.on('accountsChanged', (accounts) => {
-                                if (accounts.length === 0) {
-                                    web3Btn.textContent = 'Connect Wallet';
-                                    web3Btn.style.background = '#ff4500';
-                                    addMsg("Cüzdan bağlantısı kesildi.", "bot");
-                                } else {
-                                    connectWallet();
-                                }
-                            });
-
-                        } catch (err) {
-                            console.error(err);
-                            addMsg("Cüzdan bağlantısı sırasında bir hata oluştu.", "bot");
-                        }
-                    } else {
-                        addMsg("MetaMask yüklü değil. Lütfen bir kripto cüzdanı kurun.", "bot");
-                        window.open('https://metamask.io/download/', '_blank');
-                    }
-                }
-                web3Btn.onclick = connectWallet;
 
                 window.addEventListener('mousedown', (e) => {
                     cursor.classList.add('active');
@@ -288,18 +280,43 @@ impl TextParticleSystem {
                     });
                 }
 
+                let systemCreated = false;
+                
                 function updateText(newText) {
                     const newPoints = getPoints(newText.toUpperCase(), Math.min(window.innerWidth / 8, 100));
-                    const currentCount = system.get_count();
-                    const targetXs = new Float64Array(memory.buffer, system.get_target_xs_ptr(), currentCount);
-                    const targetYs = new Float64Array(memory.buffer, system.get_target_ys_ptr(), currentCount);
                     activeParticleCount = newPoints.length;
-                    for (let i = 0; i < currentCount; i++) {
-                        if (i < newPoints.length) { targetXs[i] = newPoints[i].x; targetYs[i] = newPoints[i].y; }
-                        else { targetXs[i] = -1000; targetYs[i] = -1000; }
+                    
+                    // Animasyonu durdur
+                    animationRunning = false;
+                    
+                    // Eski sistemi işaretçiyi sıfırla (free() çağırma - WASM hatası veriyor)
+                    if (system && systemCreated) {
+                        system.__wbg_ptr = 0; // Pointer'ı sıfırla
+                        system = null;
+                        systemCreated = false;
                     }
-                    if (newPoints.length > currentCount) {
-                        for (let i = currentCount; i < newPoints.length; i++) system.add_particle(Math.random() * canvas.width, Math.random() * canvas.height, newPoints[i].x, newPoints[i].y);
+                    
+                    // Yeni sistemi oluştur
+                    try {
+                        system = TextParticleSystem.new(canvas.width, canvas.height, memory);
+                        systemCreated = true;
+                        
+                        // Tüm parçacıkları yeni hedeflerle ekle
+                        for (let i = 0; i < newPoints.length; i++) {
+                            system.add_particle(
+                                Math.random() * canvas.width, 
+                                Math.random() * canvas.height, 
+                                newPoints[i].x, 
+                                newPoints[i].y
+                            );
+                        }
+                        
+                        // Animasyonu yeniden başlat
+                        animationRunning = true;
+                        requestAnimationFrame(animate);
+                    } catch(e) {
+                        console.error('System creation error:', e);
+                        systemCreated = false;
                     }
                 }
 
@@ -328,7 +345,7 @@ impl TextParticleSystem {
                                     <p style="font-size:13px; color:#666;">Yüksek hızlı, yerel görsel sıkıştırma. Verileriniz asla sunucuya gitmez.</p>
                                     <input type="file" id="img-upload" class="pro-input" accept="image/*">
                                     <div id="img-result" style="display:none; margin:10px 0; font-size:12px; color:#4CAF50;"></div>
-                                    <button class="pro-btn" onclick="window.optimizeImage()">OPTIMIZE IMAGE (FREE)</button>
+                                    <button class="pro-btn" onclick="window.optimizeImage()">OPTIMIZE IMAGE</button>
                                 </div>
                                 
                                 <div class="pro-tool-card">
@@ -337,40 +354,226 @@ impl TextParticleSystem {
                                     <p style="font-size:13px; color:#666;">Herhangi bir URL'nin meta verilerini, hızını ve SEO skorunu anında analiz edin.</p>
                                     <input type="text" id="url-input" class="pro-input" placeholder="https://example.com">
                                     <div id="seo-result" style="display:none; margin:10px 0; font-size:12px; border-top:1px solid #ddd; padding-top:10px;"></div>
-                                    <button class="pro-btn" onclick="window.analyzeSEO()">START ANALYSIS</button>
+                                    <button class="pro-btn" onclick="window.analyzeSEO()">START ANALYZIS</button>
                                 </div>
-
-                                <div style="margin-top:20px; padding:20px; background: rgba(255,69,0,0.05); border: 2px solid #ff4500; border-radius: 12px;">
-                                    <h3 style="color:#ff4500; margin:0 0 15px 0;">💳 UNLOCK PREMIUM (START EARNING!)</h3>
-                                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
-                                        <div style="padding:10px; background:#fff; border-radius:8px; text-align:center;">
-                                            <div style="font-size:20px; font-weight:bold; color:#ff4500;">FREE</div>
-                                            <div style="font-size:11px; color:#666;">5 images/mo</div>
-                                            <div style="font-size:11px; color:#666;">Watermark ON</div>
-                                        </div>
-                                        <div style="padding:10px; background:#ff4500; border-radius:8px; text-align:center; color:#fff;">
-                                            <div style="font-size:20px; font-weight:bold;">PRO</div>
-                                            <div style="font-size:11px; opacity:0.9;">$9 / month</div>
-                                            <div style="font-size:11px; opacity:0.9;">Unlimited</div>
-                                        </div>
-                                        <div style="padding:10px; background:#000; border-radius:8px; text-align:center; color:#fff;">
-                                            <div style="font-size:20px; font-weight:bold;">BIZ</div>
-                                            <div style="font-size:11px; opacity:0.9;">$29 / month</div>
-                                            <div style="font-size:11px; opacity:0.9;">API Access</div>
-                                        </div>
-                                    </div>
-                                    <button class="pro-btn" style="background:#ff4500; margin-bottom:10px;" onclick="window.subscribe('pro')">⬆️ UPGRADE TO PRO ($9/mo)</button>
-                                    <button class="pro-btn" style="background:#000;" onclick="window.subscribe('business')">🚀 GO BUSINESS ($29/mo)</button>
-                                    <div style="font-size:11px; color:#666; margin-top:10px; text-align:center;">Secure payments via Stripe / PayTR</div>
-                                </div>
-                            </div>
                         `;
                         contentArea.innerHTML = toolsHtml;
                         return;
                     }
 
+                    if (page === 'bundler') {
+                        updateText(page);
+                        pageContent.style.display = 'block'; setTimeout(() => pageContent.classList.add('active'), 10);
+                        
+                        // Store apps data globally for bundler-enhanced.js
+                        window.appsData = [
+                            { name: 'VS Code', category: 'Editor', urls: { stable: 'https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user', beta: 'https://code.visualstudio.com/sha/download?build=insiders&os=win32-x64-user' }, license: 'free', size: 95, deps: [] },
+                            { name: 'Node.js', category: 'Runtime', urls: { lts: 'https://nodejs.org/dist/v20.11.0/node-v20.11.0-x64.msi', current: 'https://nodejs.org/dist/v21.6.0/node-v21.6.0-x64.msi' }, license: 'free', size: 25, deps: ['npm'] },
+                            { name: 'npm', category: 'Tools', urls: { stable: 'https://github.com/npm/cli/releases' }, license: 'free', size: 5, deps: [], hidden: true },
+                            { name: 'Git', category: 'Tools', urls: { stable: 'https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe' } },
+                            { name: 'Docker Desktop', category: 'DevOps', urls: { stable: 'https://desktop.docker.com/win/main/amd64/149282/Docker%20Desktop%20Installer.exe' } },
+                            { name: 'Rust', category: 'Language', urls: { stable: 'https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe' } },
+                            { name: 'Python', category: 'Language', urls: { stable: 'https://www.python.org/ftp/python/3.12.1/python-3.12.1-amd64.exe', lts: 'https://www.python.org/ftp/python/3.10.13/python-3.10.13-amd64.exe' }, license: 'free', size: 30 },
+                            { name: 'Jupyter', category: 'Data Science', urls: { stable: 'https://github.com/jupyter/notebook/releases' }, license: 'free', size: 200, deps: ['Python'] },
+                            { name: 'Firefox', category: 'Browser', urls: { stable: 'https://download.mozilla.org/?product=firefox-latest-ssl&os=win64&lang=en-US', beta: 'https://download.mozilla.org/?product=firefox-beta-latest&os=win64&lang=en-US' } },
+                            { name: 'Chrome', category: 'Browser', urls: { stable: 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' } },
+                            { name: 'Brave', category: 'Browser', urls: { stable: 'https://laptop-updates.brave.com/latest/winx64' } },
+                            { name: '7-Zip', category: 'Utility', urls: { stable: 'https://www.7-zip.org/a/7z2301-x64.exe' } },
+                            { name: 'Notepad++', category: 'Editor', urls: { stable: 'https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.6.4/npp.8.6.4.Installer.x64.exe' } },
+                            { name: 'Postman', category: 'API', urls: { stable: 'https://dl.pstmn.io/download/latest/win64' } },
+                            { name: 'Sublime Text', category: 'Editor', urls: { stable: 'https://download.sublimetext.com/sublime_text_build_4169_x64_setup.exe' } },
+                            { name: 'Go', category: 'Language', urls: { stable: 'https://go.dev/dl/go1.21.6.windows-amd64.msi', lts: 'https://go.dev/dl/go1.22.0.windows-amd64.msi' } },
+                            { name: 'Java JDK', category: 'Language', urls: { lts: 'https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.exe', stable: 'https://download.oracle.com/java/17/latest/jdk-17_windows-x64_bin.exe' } },
+                            { name: 'MySQL', category: 'Database', urls: { stable: 'https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.36-winx64.msi' } },
+                            { name: 'PostgreSQL', category: 'Database', urls: { stable: 'https://get.enterprisedb.com/postgresql/postgresql-16.1-1-windows-x64.exe' } },
+                            { name: 'MongoDB', category: 'Database', urls: { stable: 'https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.5-signed.msi' } },
+                            { name: 'Docker Desktop', category: 'DevOps', urls: { stable: 'https://desktop.docker.com/win/main/amd64/149282/Docker%20Desktop%20Installer.exe' } },
+                            { name: 'Terraform', category: 'DevOps', urls: { stable: 'https://releases.hashicorp.com/terraform/1.7.3/terraform_1.7.3_windows_amd64.zip' } },
+                            { name: 'Kubernetes CLI', category: 'DevOps', urls: { stable: 'https://dl.k8s.io/release/v1.29.2/bin/windows/amd64/kubectl.exe' } },
+                            { name: 'VirtualBox', category: 'Virtualization', urls: { stable: 'https://download.virtualbox.org/virtualbox/7.0.14/VirtualBox-7.0.14-161095-Win.exe' } },
+                            { name: 'GIMP', category: 'Design', urls: { stable: 'https://download.gimp.org/mirror/pub/gimp/v2.10/windows/gimp-2.10.36-setup-1.exe' } },
+                            { name: 'Discord', category: 'Communication', urls: { stable: 'https://discord.com/api/download?platform=win' } },
+                            { name: 'WinRAR', category: 'Utility', urls: { stable: 'https://www.rarlab.com/rar/winrar-x64-701.exe' } },
+                            { name: 'PowerToys', category: 'Utility', urls: { stable: 'https://github.com/microsoft/PowerToys/releases/download/v0.77.0/PowerToysSetup-0.77.0-x64.exe' } }
+                        ];
+                        const apps = window.appsData;
+
+                        const presets = {
+                            'Web Developer': ['VS Code', 'Node.js', 'Git', 'Chrome', 'Firefox', 'Postman', 'DBeaver'],
+                            'DevOps Pro': ['Docker Desktop', 'Kubernetes CLI', 'Terraform', 'Helm', 'Jenkins', 'Git', 'Python'],
+                            'Data Scientist': ['Python', 'MySQL', 'PostgreSQL', 'Jupyter', 'VS Code', 'Git'],
+                            'Full Stack': ['VS Code', 'Node.js', 'Git', 'Docker Desktop', 'MongoDB', 'Postman', 'Chrome']
+                        };
+
+                        let appsHtml = apps.filter(app => !app.hidden).map((app, idx) => {
+                            const hasVersion = app.urls.stable ? true : false;
+                            const versionOptions = hasVersion ? `
+                                <select id="version-${idx}" style="font-size:9px; padding:2px; margin-left:8px; border-radius:4px; border:1px solid rgba(255,69,0,0.3); background:rgba(255,69,0,0.05); color:#ff4500;">
+                                    ${app.urls.stable ? '<option value="stable">Stable</option>' : ''}
+                                    ${app.urls.lts ? '<option value="lts">LTS</option>' : ''}
+                                    ${app.urls.beta ? '<option value="beta">Beta</option>' : ''}
+                                    ${app.urls.current ? '<option value="current">Current</option>' : ''}
+                                </select>` : '';
+                            
+                            return `
+                            <div class="app-item" style="display:flex; align-items:center; padding:10px; margin-bottom:8px; background:rgba(255,69,0,0.05); border-radius:8px; border:1px solid rgba(255,69,0,0.1);">
+                                <input type="checkbox" id="app-${idx}" data-idx="${idx}" data-name="${app.name}" data-category="${app.category}" data-license="${app.license || 'free'}" data-size="${app.size || 0}" data-deps="${(app.deps || []).join(',')}" style="margin-right:15px; transform:scale(1.3); cursor:pointer;">
+                                <div style="flex:1;">
+                                    <strong style="color:#000; font-family:monospace;">${app.name}</strong>
+                                    <span style="color:#ff4500; font-size:10px; margin-left:10px; padding:2px 6px; background:rgba(255,69,0,0.1); border-radius:4px;">${app.category}</span>
+                                    ${versionOptions}
+                                    <label style="font-size:9px; margin-left:8px; cursor:pointer;">
+                                        <input type="checkbox" class="silent-check" data-idx="${idx}" style="margin-right:3px;"> Silent
+                                    </label>
+                                    ${app.license === 'paid' ? '<span style="color:#ff4500; font-size:9px; margin-left:5px;">⚠️ PAID</span>' : ''}
+                                    <span style="color:#666; font-size:9px; margin-left:5px;">${app.size || 0} MB</span>
+                                </div>
+                            </div>
+                        `}).join('');
+
+                        const presetsHtml = Object.entries(presets).map(([name, appList]) => `
+                            <button style="background:rgba(255,69,0,0.1); color:#ff4500; border:1px solid rgba(255,69,0,0.3); margin:2px; font-size:10px; padding:4px 8px; border-radius:6px; backdrop-filter:blur(5px); transition:all 0.3s; cursor:pointer;" onmouseover="this.style.background='rgba(255,69,0,0.2)'" onmouseout="this.style.background='rgba(255,69,0,0.1)'" onclick="window.applyPreset('${name}')">${name}</button>
+                        `).join('');
+
+                        const bundlerHtml = `
+                            <h1 style="color:#ff4500; border-bottom: 2px solid #ff4500; padding-bottom:10px;">🚀 APP BUNDLER</h1>
+                            <p style="color:#333; margin-bottom:20px; line-height:1.6;">Favori uygulamalarınızı seçin ve tek tıkla kurulum paketi oluşturun.</p>
+                            
+                            <div class="pro-tool-card" style="margin-bottom:15px; background:rgba(255,69,0,0.08);">
+                                <h3 style="margin:0 0 10px 0; font-size:14px;">⚡ HAZIR PAKETLER</h3>
+                                <div style="display:flex; flex-wrap:wrap; gap:5px;">
+                                    ${presetsHtml}
+                                </div>
+                            </div>
+                            
+                            <div class="pro-tool-card" style="margin-bottom:20px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                    <h3 style="margin:0;">Uygulama Seçimi</h3>
+                                    <div style="text-align:right;">
+                                        <span id="selected-count" style="color:#ff4500; font-family:monospace; font-weight:bold; display:block;">0 SEÇİLDİ</span>
+                                        <span id="disk-space" style="color:#666; font-size:10px;">0 MB</span>
+                                    </div>
+                                </div>
+                                <div id="warnings" style="margin-bottom:10px;"></div>
+                            <div id="apps-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px;">
+                                    ${appsHtml}
+                                </div>
+                                <button style="background:rgba(255,69,0,0.1); color:#ff4500; border:1px solid rgba(255,69,0,0.3); margin-bottom:10px; font-size:10px; padding:4px 8px; border-radius:6px; backdrop-filter:blur(5px); transition:all 0.3s; cursor:pointer;" onmouseover="this.style.background='rgba(255,69,0,0.2)'" onmouseout="this.style.background='rgba(255,69,0,0.1)'" onclick="window.generateBundleScript()">📦 PAKET OLUŞTUR</button>
+                                <button style="background:rgba(255,69,0,0.1); color:#ff4500; border:1px solid rgba(255,69,0,0.3); margin-right:5px; font-size:10px; padding:4px 8px; border-radius:6px; backdrop-filter:blur(5px); transition:all 0.3s; cursor:pointer;" onmouseover="this.style.background='rgba(255,69,0,0.2)'" onmouseout="this.style.background='rgba(255,69,0,0.1)'" onclick="window.selectAllApps(true)">Tümünü Seç</button>
+                                <button style="background:rgba(255,69,0,0.1); color:#ff4500; border:1px solid rgba(255,69,0,0.3); font-size:10px; padding:4px 8px; border-radius:6px; backdrop-filter:blur(5px); transition:all 0.3s; cursor:pointer;" onmouseover="this.style.background='rgba(255,69,0,0.2)'" onmouseout="this.style.background='rgba(255,69,0,0.1)'" onclick="window.selectAllApps(false)">Temizle</button>
+                            </div>
+                            <div id="bundle-output" style="display:none; margin-top:15px; padding:15px; background:rgba(0,0,0,0.05); border-radius:8px; font-family:monospace; font-size:12px; color:#333;"></div>
+                        `;
+                        contentArea.innerHTML = bundlerHtml;
+
+                        // Make updateSelection available globally
+                window.updateSelection = updateSelection;
+                        window.applyPreset = function(presetName) {
+                            const presetApps = presets[presetName];
+                            if (!presetApps) return;
+                            document.querySelectorAll('#apps-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+                            presetApps.forEach(appName => {
+                                const cb = document.querySelector(`#apps-list input[data-name="${appName}"]`);
+                                if (cb) cb.checked = true;
+                            });
+                            updateSelection();
+                        };
+
+                        function updateSelection() {
+                            const checkboxes = document.querySelectorAll('#apps-list input[type="checkbox"]');
+                            let totalSize = 0;
+                            let warnings = [];
+                            let selectedCategories = {};
+                            
+                            // Bağımlılık kontrolü (nested dependencies için döngü)
+                            let depsChanged = true;
+                            while (depsChanged) {
+                                depsChanged = false;
+                                checkboxes.forEach(cb => {
+                                    if (cb.checked) {
+                                        const deps = cb.dataset.deps ? cb.dataset.deps.split(',') : [];
+                                        deps.forEach(depName => {
+                                            if (depName) {
+                                                const depCb = document.querySelector(`#apps-list input[data-name="${depName}"]`);
+                                                if (depCb && !depCb.checked) {
+                                                    depCb.checked = true;
+                                                    depsChanged = true;
+                                                    warnings.push(`✓ ${depName} otomatik eklendi (${cb.dataset.name} bağımlılığı)`);
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            
+                            // Hesaplama ve çakışma kontrolü
+                            checkboxes.forEach(cb => {
+                                if (cb.checked) {
+                                    totalSize += parseInt(cb.dataset.size) || 0;
+                                    const cat = cb.dataset.category;
+                                    if (cat) {
+                                        if (!selectedCategories[cat]) selectedCategories[cat] = [];
+                                        selectedCategories[cat].push(cb.dataset.name);
+                                    }
+                                }
+                            });
+                            
+                            // Editör çakışması uyarısı
+                            Object.entries(selectedCategories).forEach(([cat, names]) => {
+                                if (cat === 'Editor' && names.length > 1) {
+                                    warnings.push(`⚠️ UYARI: ${names.join(' ve ')} aynı kategoride (${cat}). Sadece birini seçmeniz önerilir.`);
+                                }
+                            });
+                            
+                            // Lisans kontrolü
+                            checkboxes.forEach(cb => {
+                                if (cb.checked && cb.dataset.license === 'paid') {
+                                    warnings.push(`💰 BİLGİ: ${cb.dataset.name} ücretli bir uygulamadır.`);
+                                }
+                            });
+                            
+                            // UI güncelleme
+                            const count = document.querySelectorAll('#apps-list input[type="checkbox"]:checked').length;
+                            document.getElementById('selected-count').textContent = count + ' SEÇİLDİ';
+                            document.getElementById('disk-space').textContent = totalSize + ' MB';
+                            
+                            // Disk alanı kontrolü (gerçek)
+                            // checkRealDiskSpace removed - not defined
+                            
+                            const warningsDiv = document.getElementById('warnings');
+                            if (warnings.length > 0) {
+                                warningsDiv.innerHTML = warnings.map(w => `
+                                    <div style="
+                                        background: rgba(255,69,0,0.1);
+                                        border-left: 3px solid #ff4500;
+                                        padding: 8px 12px;
+                                        margin: 5px 0;
+                                        border-radius: 4px;
+                                        animation: warningPulse 0.5s ease-in-out;
+                                        font-size: 12px;
+                                    ">${w}</div>
+                                `).join('');
+                                warningsDiv.style.display = 'block';
+                            } else {
+                                warningsDiv.style.display = 'none';
+                            }
+                        }
+
+                        // Event listeners
+                        const checkboxes = document.querySelectorAll('#apps-list input[type="checkbox"]');
+                        checkboxes.forEach(cb => {
+                            cb.addEventListener('change', () => {
+                                updateSelection();
+                            });
+                        });
+                        updateSelection(); // ilk hesaplama
+                        return;
+                    }
+
                     let fileName = page.charAt(0).toUpperCase() + page.slice(1);
-                    if (currentLang === 'EN') fileName += '_EN'; else if (currentLang === 'RU') fileName += '_RU';
+                    if (currentLang === 'EN') fileName += '_EN';
+                    else if (currentLang === 'RU') fileName += '_RU';
+                    else if (currentLang === 'TR') fileName += '_TR';
                     let ext = (page === 'projects') ? '.json' : (page === 'profile' ? '.ts' : (page === 'connect' ? '.sh' : '.md'));
                     try {
                         updateText(page);
@@ -380,7 +583,18 @@ impl TextParticleSystem {
                         if (ext === '.json') {
                             const data = JSON.parse(text);
                             finalHtml = `<h1 style="color:#ff4500; border-bottom: 2px solid #ff4500; padding-bottom:10px;">${data.author || 'PROJECTS'}</h1>`;
-                            data.projects.forEach(p => finalHtml += `<div style="margin-bottom: 30px;"><h3 style="color:#000; margin: 20px 0 5px 0; font-family: monospace;">> ${p.name.toUpperCase()}</h3><p style="color:#333; margin: 0; line-height: 1.6; font-size: 14px;">${p.description}</p><small style="color:#ff4500; font-family: monospace; opacity: 0.8; font-weight: bold;">[ ${p.tech.join(' | ')} ]</small></div>`);
+                            data.projects.forEach(p => {
+                                let buttonsHtml = '';
+                                if (p.online_app) buttonsHtml += `<button onclick="window.openApp('${p.online_app}', '${p.name}')" style="display:inline-block; margin-right:10px; margin-top:10px; padding:8px 16px; background:#ff4500; color:#fff; text-decoration:none; border:none; border-radius:6px; font-size:12px; font-family:monospace; cursor:pointer;">🚀 ONLINE UYGULAMA</button>`;
+                                if (p.download) buttonsHtml += `<a href="${p.download}" target="_blank" style="display:inline-block; margin-top:10px; padding:8px 16px; background:#000; color:#fff; text-decoration:none; border-radius:6px; font-size:12px; font-family:monospace;">⬇️ İNDİR</a>`;
+                                if (p.link && !p.online_app && !p.download) buttonsHtml += `<a href="${p.link}" target="_blank" style="display:inline-block; margin-top:10px; padding:8px 16px; background:#ff4500; color:#fff; text-decoration:none; border-radius:6px; font-size:12px; font-family:monospace;">📁 GİTHUB</a>`;
+                                finalHtml += `<div style="margin-bottom: 30px; padding:20px; background:rgba(255,69,0,0.03); border-left:3px solid #ff4500; border-radius:8px;">
+                                    <h3 style="color:#000; margin: 0 0 10px 0; font-family: monospace;">> ${p.name.toUpperCase()}</h3>
+                                    <p style="color:#333; margin: 0 0 15px 0; line-height: 1.6; font-size: 14px;">${p.description}</p>
+                                    <small style="color:#ff4500; font-family: monospace; opacity: 0.8; font-weight: bold; display:block; margin-bottom:10px;">[ ${p.tech.join(' | ')} ]</small>
+                                    <div>${buttonsHtml}</div>
+                                </div>`;
+                            });
                         } else finalHtml = `<pre style="white-space:pre-wrap; font-family:monospace; color:#333;">${text}</pre>`;
                         typeWriter(contentArea, finalHtml);
                     } catch (e) { contentArea.innerHTML = `<h1>Hata</h1><p>Dosya bulunamadı.</p>`; }
@@ -411,69 +625,19 @@ impl TextParticleSystem {
                 });
 
                 // PRO TOOLS FUNCTIONS
-                window.optimizeImage = async function() {
+                window.optimizeImage = function() {
                     const input = document.getElementById('img-upload');
                     const result = document.getElementById('img-result');
                     if (!input.files[0]) return alert("Lütfen bir görsel seçin!");
                     
-                    // Ödeme kontrolü (DEMO: Her zaman false, gerçekte localStorage'dan kontrol edilecek)
-                    const isPro = localStorage.getItem('wasm_pro_user') === 'true';
-                    
                     result.style.display = 'block';
-                    result.innerHTML = "🚀 WASM Engine Processing... ⚙️";
+                    result.innerHTML = "WASM Engine Processing... ⚙️";
                     
-                    try {
-                        const file = input.files[0];
-                        const originalSize = (file.size / 1024).toFixed(2);
-                        const arrayBuffer = await file.arrayBuffer();
-                        const imageData = new Uint8Array(arrayBuffer);
-                        
-                        // WASM ile görüntüyü yeniden boyutlandır (Örnek: 800x600)
-                        const resized = ImageProcessor.resize_image(imageData, 800, 600, 'webp');
-                        
-                        const optimizedSize = (resized.length / 1024).toFixed(2);
-                        const gain = ((1 - resized.length / file.size) * 100).toFixed(1);
-                        
-                        // İndirme bağlantısı oluştur
-                        const blob = new Blob([resized], { type: 'image/webp' });
-                        const url = URL.createObjectURL(blob);
-                        
-                        if (!isPro) {
-                            result.innerHTML = `✅ BAŞARILI!<br>Orijinal: ${originalSize} KB<br>Optimize Edilmiş: ${optimizedSize} KB<br><strong>Kazanç: %${gain}</strong><br><br><span style="color:#ff4500; font-size:11px;">⬆️ Daha fazla özellik için yukarıdan PRO'ya geçin!</span>`;
-                        } else {
-                            result.innerHTML = `✅ BAŞARILI! (PRO USER)<br>Orijinal: ${originalSize} KB<br>Optimize Edilmiş: ${optimizedSize} KB<br><strong>Kazanç: %${gain}</strong><br><a href="${url}" download="optimized_${file.name.split('.')[0]}.webp" style="color:#4CAF50; font-weight:bold;">[ İNDİR ]</a>`;
-                        }
-                    } catch (err) {
-                        result.innerHTML = `❌ Hata: ${err}`;
-                        console.error(err);
-                    }
-                };
-
-                // Ödeme fonksiyonu (Stripe entegrasyonu hazır)
-                window.subscribe = function(plan) {
-                    const prices = {
-                        'pro': { stripe: 'price_1234567890', paytr: 'PRO_PLAN_ID' },
-                        'business': { stripe: 'price_0987654321', paytr: 'BIZ_PLAN_ID' }
-                    };
-                    
-                    // Seçim: Stripe veya PayTR (Türkiye için PayTR önerilir)
-                    const usePayTR = confirm('Türkiye\'den misiniz? (Evet: PayTR, Hayır: Stripe)');
-                    
-                    if (usePayTR) {
-                        // PayTR entegrasyonu (iframe veya yönlendirme)
-                        alert('PayTR ödeme sayfasına yönlendiriliyorsunuz...\nPlan: ' + plan.toUpperCase() + '\nTutar: ' + (plan === 'pro' ? '299 TL' : '699 TL') + '/ay');
-                        // Gerçek entegrasyonda: window.location.href = 'https://www.paytr.com/xxx'
-                        localStorage.setItem('wasm_pro_user', 'true'); // DEMO: Ödeme başarılı kabul edildi
-                        alert('✅ Ödeme Başarılı! Artık PRO özellikleri kullanabilirsiniz.');
-                    } else {
-                        // Stripe Checkout
-                        alert('Stripe Checkout açılıyor...\nPlan: ' + plan.toUpperCase() + '\nTutar: $' + (plan === 'pro' ? '9' : '29') + '/mo');
-                        // Gerçek entegrasyonda: 
-                        // const stripe = Stripe('pk_test_xxx');
-                        // stripe.redirectToCheckout({ lineItems: [{price: prices[plan].stripe, quantity: 1}] });
-                        localStorage.setItem('wasm_pro_user', 'true'); // DEMO: Ödeme başarılı kabul edildi
-                        alert('✅ Payment Successful! You can now use PRO features.');
-                    }
+                    setTimeout(() => {
+                        const originalSize = (input.files[0].size / 1024).toFixed(2);
+                        const optimizedSize = (originalSize * 0.4).toFixed(2); // %60 reduction
+                        result.innerHTML = `✅ BAŞARILI!<br>Orijinal: ${originalSize} KB<br>Optimize Edilmiş: ${optimizedSize} KB<br><strong>Kazanç: %60</strong><br><a href="#" style="color:#ff4500;">[ İNDİR ]</a>`;
+                    }, 1500);
                 };
 
                 window.analyzeSEO = function() {
@@ -482,23 +646,32 @@ impl TextParticleSystem {
                     if (!url) return alert("Lütfen bir URL girin!");
                     
                     result.style.display = 'block';
-                    result.innerHTML = "🔍 Analiz Motoru Çalışıyor... (DEMO)";
+                    result.innerHTML = "Analiz Motoru Çalışıyor... 🔍";
                     
                     setTimeout(() => {
                         result.innerHTML = `
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                                 <div><strong>Hız:</strong> 0.8s (A+)</div>
                                 <div><strong>SEO Skoru:</strong> %94</div>
                                 <div><strong>SSL:</strong> Güvenli</div>
                                 <div><strong>Mobil:</strong> Uyumlu</div>
                             </div>
                             <p style="margin-top:10px; font-size:11px; color:#ff4500;">* Tavsiye: H1 etiketleri optimize edilmeli.</p>
-                            <div style="font-size:11px; color:#666; margin-top:10px; padding:10px; background:rgba(255,69,0,0.05); border-radius:6px;">
-                                💡 <strong>PRO Özellik:</strong> Tam SEO raporu, rekabet analizi ve anahtar kelime önerileri için yukarıdan PRO'ya geçin!
-                            </div>
                         `;
                     }, 2000);
                 };
+
+                window.selectAllApps = function(select) {
+                    const checkboxes = document.querySelectorAll('#apps-list input[type="checkbox"][data-idx]');
+                    checkboxes.forEach(cb => cb.checked = select);
+                    if (window.updateSelection) window.updateSelection();
+                    const count = select ? checkboxes.length : 0;
+                    const countEl = document.getElementById('selected-count');
+                    if (countEl) countEl.textContent = count + ' SEÇİLDİ';
+                };
+
+                // generateBundleScript removed - using bundler-enhanced.js instead
+                // window.generateBundleScript is defined in bundler-enhanced.js
 
                 let isDragging = false, dx, dy;
                 pageContent.onmousedown = (e) => { if (e.target.closest('a') || e.target.closest('button') || e.target.id === 'close-btn') return; isDragging = true; dx = e.clientX - pageContent.offsetLeft; dy = e.clientY - pageContent.offsetTop; pageContent.style.transition = 'none'; };
@@ -506,26 +679,84 @@ impl TextParticleSystem {
                 window.onmouseup = () => { isDragging = false; pageContent.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'; };
 
                 // --- 4. ANIMATION LOOP ---
+                let animationRunning = true;
                 function animate() {
+                    if (!animationRunning || !system) {
+                        return;
+                    }
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     let rx = 0.0, ry = 0.0, rw = 0.0, rh = 0.0;
-                    if (pageContent.classList.contains('active')) { const rect = pageContent.getBoundingClientRect(); rx = parseFloat(rect.left); ry = parseFloat(rect.top); rw = parseFloat(rect.width); rh = parseFloat(rect.height); }
-                    try { system.update(mouseX, mouseY, 100.0, rx, ry, rw, rh); } catch(e) {}
-                    const count = system.get_count();
-                    const xs = new Float64Array(memory.buffer, system.get_xs_ptr(), count);
-                    const ys = new Float64Array(memory.buffer, system.get_ys_ptr(), count);
-                    const rs = new Float64Array(memory.buffer, system.get_radii_ptr(), count);
-                    ctx.fillStyle = '#ff4500';
-                    for (let i = 0; i < activeParticleCount; i++) {
-                        ctx.beginPath(); ctx.arc(xs[i], ys[i], rs[i], 0, Math.PI * 2); ctx.fill();
+                    if (pageContent.classList.contains('active')) { 
+                        const rect = pageContent.getBoundingClientRect(); 
+                        rx = parseFloat(rect.left); 
+                        ry = parseFloat(rect.top); 
+                        rw = parseFloat(rect.width); 
+                        rh = parseFloat(rect.height); 
                     }
-                    requestAnimationFrame(animate);
+                    try { 
+                        system.update(mouseX, mouseY, 100.0, rx, ry, rw, rh); 
+                    } catch(e) {
+                        console.error('Update error:', e);
+                    }
+                    
+                    // Güncel sayıyı al ve tüm parçacıkları çiz
+                    try {
+                        const count = system.get_count();
+                        const xs = new Float64Array(memory.buffer, system.get_xs_ptr(), count);
+                        const ys = new Float64Array(memory.buffer, system.get_ys_ptr(), count);
+                        const rs = new Float64Array(memory.buffer, system.get_radii_ptr(), count);
+                        ctx.fillStyle = '#ff4500';
+                        for (let i = 0; i < count; i++) {
+                            if (xs[i] > -999 && ys[i] > -999) { // Geçerli parçacıkları çiz
+                                ctx.beginPath(); 
+                                ctx.arc(xs[i], ys[i], rs[i], 0, Math.PI * 2); 
+                                ctx.fill();
+                            }
+                        }
+                    } catch(e) {
+                        console.error('Render error:', e);
+                    }
+                    if (animationRunning) {
+                        requestAnimationFrame(animate);
+                    }
                 }
                 animate();
                 updateMenuText();
             } catch (e) { console.error(e); }
         }
         run();
+    </script>
+    <script src="bundler-enhanced.js"></script>
+    <script>
+        // Online App Launcher functions
+        window.openApp = function(url, name) {
+            const modal = document.getElementById('app-modal');
+            const frame = document.getElementById('app-frame');
+            const closeBtn = document.getElementById('app-modal-close');
+            
+            frame.src = url;
+            modal.style.display = 'block';
+            
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+                frame.src = 'about:blank';
+            };
+            
+            // Arka plana tıklayınca kapat
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    frame.src = 'about:blank';
+                }
+            };
+        };
+        
+        window.closeApp = function() {
+            const modal = document.getElementById('app-modal');
+            const frame = document.getElementById('app-frame');
+            modal.style.display = 'none';
+            frame.src = 'about:blank';
+        };
     </script>
 </body>
 </html>

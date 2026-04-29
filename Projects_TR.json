@@ -2,25 +2,25 @@
   "projects": [
     {
       "name": "WASM Particle Engine",
-      "description": "High-performance particle simulation engine based on Rust.",
+      "description": "Rust tabanlı yüksek performanslı parçacık simülasyon motoru.",
       "tech": ["Rust", "WebAssembly", "JavaScript"],
       "link": "https://github.com/xgoetia/wasm-particles"
     },
     {
       "name": "Cyber-Terminal UI",
-      "description": "Web-based futuristic terminal interface and IDE concept.",
+      "description": "Web tabanlı fütüristik terminal arayüzü ve IDE konsepti.",
       "tech": ["TypeScript", "CSS", "HTML5"],
       "link": "https://github.com/xgoetia/cyber-ui"
     },
     {
       "name": "Distributed Logger",
-      "description": "Distributed log management system running on Elixir and Erlang VM.",
+      "description": "Elixir ve Erlang VM üzerinde çalışan dağıtık log yönetim sistemi.",
       "tech": ["Elixir", "Erlang", "Docker"],
       "link": "https://github.com/xgoetia/dist-logger"
     },
     {
       "name": "XGoetia App Launcher",
-      "description": "Multi-language supported, WebAssembly-based online application launcher and download center. (Demo app: Notepad)",
+      "description": "Çok dilli destekli, WebAssembly tabanlı online uygulama başlatıcı ve indirme merkezi. (Demo uygulama: Not Defteri)",
       "tech": ["Rust", "WASM", "TypeScript", "Node.js"],
       "link": "https://github.com/xgoetia/app-launcher",
       "download": "https://github.com/xgoetia/app-launcher/releases",
