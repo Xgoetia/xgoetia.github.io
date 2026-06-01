@@ -1,0 +1,28 @@
+{
+  "name": "xgoetia",
+  "title": "Full-Stack Systems Architect",
+  "location": "Dijital Boşluk / Remote",
+  "bio": "Düşük seviyeli sistem dillerini web'in esnekliğiyle birleştirerek yüksek performanslı mimariler kurguluyorum.",
+  "skills": [
+    {
+      "category": "Çekirdek Sistemler",
+      "items": ["Rust", "Go", "C++", "WebAssembly"],
+      "expertise": 10
+    },
+    {
+      "category": "Frontend Motoru",
+      "items": ["TypeScript", "WebGPU", "React", "Next.js"],
+      "expertise": 9
+    },
+    {
+      "category": "Altyapı & DevOps",
+      "items": ["Docker", "Kubernetes", "AWS", "CI/CD"],
+      "expertise": 8
+    },
+    {
+      "category": "Backend & Eşzamanlılık",
+      "items": ["Elixir", "Python", "SQL", "Redis"],
+      "expertise": 9
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "xgoetia",
+  "title": "Full-Stack Systems Architect",
+  "location": "Цифровая пустота / Remote",
+  "bio": "Я объединяю низкоуровневые системные языки с гибкостью веба для создания высокопроизводительных архитектур.",
+  "skills": [
+    {
+      "category": "Ядро Систем",
+      "items": ["Rust", "Go", "C++", "WebAssembly"],
+      "expertise": 10
+    },
+    {
+      "category": "Фронтенд",
+      "items": ["TypeScript", "WebGPU", "React", "Next.js"],
+      "expertise": 9
+    },
+    {
+      "category": "Инфраструктура",
+      "items": ["Docker", "Kubernetes", "AWS", "CI/CD"],
+      "expertise": 8
+    },
+    {
+      "category": "Бэкенд",
+      "items": ["Elixir", "Python", "SQL", "Redis"],
+      "expertise": 9
+    }
+  ]
+}

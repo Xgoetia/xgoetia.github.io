@@ -1,0 +1,28 @@
+{
+  "name": "xgoetia",
+  "title": "Full-Stack Systems Architect",
+  "location": "Digital Void / Remote",
+  "bio": "Building high-performance architectures by combining low-level systems languages with the flexibility of the web.",
+  "skills": [
+    {
+      "category": "Core Systems",
+      "items": ["Rust", "Go", "C++", "WebAssembly"],
+      "expertise": 10
+    },
+    {
+      "category": "Frontend Engine",
+      "items": ["TypeScript", "WebGPU", "React", "Next.js"],
+      "expertise": 9
+    },
+    {
+      "category": "Infrastructure & DevOps",
+      "items": ["Docker", "Kubernetes", "AWS", "CI/CD"],
+      "expertise": 8
+    },
+    {
+      "category": "Backend & Concurrency",
+      "items": ["Elixir", "Python", "SQL", "Redis"],
+      "expertise": 9
+    }
+  ]
+}

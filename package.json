@@ -1,0 +1,30 @@
+{
+  "name": "my_wasm_xgoetia",
+  "version": "1.0.0",
+  "description": "Bu proje Rust ve WebAssembly kullanılarak oluşturuldu.",
+  "main": "index.js",
+  "scripts": {
+    "build:wasm": "wasm-pack build --target web --out-dir pkg",
+    "build:wasm:dev": "wasm-pack build --target web --out-dir pkg --dev",
+    "build": "npm run build:wasm",
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xgoetia/xgoetia.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Xgoetia/xgoetia.github.io/issues"
+  },
+  "homepage": "https://github.com/Xgoetia/xgoetia.github.io#readme",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
